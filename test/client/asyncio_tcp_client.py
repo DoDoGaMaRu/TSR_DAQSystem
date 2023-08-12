@@ -13,6 +13,7 @@ machine_name = 'test'
 class TCPClientProtocol(asyncio.Protocol):
     def __init__(self):
         self.transport = None
+        self.event = asyncio.Event()
 
     def connection_made(self, transport: transports.WriteTransport) -> None:
         self.transport = transport
@@ -26,7 +27,7 @@ class TCPClientProtocol(asyncio.Protocol):
     def send_data(self, event, data) -> None:
         if not self.transport.is_closing():
             self.transport.write(send_protocol(event=event,
-                                           data=data))
+                                               data=data))
         else:
             raise Exception("Attempted to send data but lost connection")
 
@@ -36,6 +37,13 @@ class TCPClientProtocol(asyncio.Protocol):
     def connection_lost(self, exc) -> None:
         self.transport.close()
         print('connection lost')
+        self.event.set()
+
+    async def wait(self):
+        await self.event.wait()
+
+
+protocol: TCPClientProtocol = None
 
 
 def send_protocol(event, data):
@@ -51,25 +59,30 @@ async def save_loop(msg: float) -> None:
     await asyncio.sleep(1)
 
 
-async def send_loop(protocol: TCPClientProtocol, msg: float) -> None:
-    protocol.send_data(event='test', data=msg)
-    print('data send')
-    await asyncio.sleep(1)
+async def send_loop() -> None:
+    global protocol
+    while True:
+        msg = random.random() # get_vib()
+        print('save')
+        if protocol is not None and not protocol.is_closing():
+            protocol.send_data(event='test', data=msg)
+            print('data send')
+        await asyncio.sleep(1)
+
+
+async def create_conn():
+    global protocol
+    while True:
+        try:
+            conn = loop.create_connection(lambda: TCPClientProtocol(), HOST, PORT)
+            transport, protocol = await conn
+            await protocol.wait()
+        except ConnectionRefusedError:
+            print('disconnected')
+            await asyncio.sleep(10)
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    protocol: TCPClientProtocol = None
-
-    while True:
-        msg = random.random()
-
-        if protocol is not None and not protocol.is_closing():
-            loop.run_until_complete(send_loop(protocol, msg))
-        else:
-            try:
-                conn = loop.create_connection(lambda: TCPClientProtocol(), HOST, PORT)
-                result = loop.run_until_complete(asyncio.gather(save_loop(msg), conn))
-                transport, protocol = result[1]
-            except ConnectionRefusedError:
-                pass
+    loop.create_task(send_loop())
+    loop.run_until_complete(create_conn())

@@ -1,16 +1,23 @@
-# This is a sample Python script.
+import asyncio
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from network import TCPClient
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+HOST = 'localhost'
+PORT = 8082
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+machine_name = 'test'
+
+tcp_client = TCPClient(host=HOST,
+                       port=PORT,
+                       name=machine_name)
+loop = asyncio.get_event_loop()
+
+
+async def temp():
+    while True:
+        await tcp_client.send_data(event='',
+                             data=input('send : '))
+        await asyncio.sleep(0.1)
+
+loop.run_until_complete(temp())

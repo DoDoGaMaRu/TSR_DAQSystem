@@ -3,7 +3,7 @@ import pickle
 import asyncio
 from asyncio import transports
 
-HOST = '192.168.0.8'
+HOST = 'localhost'
 PORT = 8082
 
 machine_name = 'test'

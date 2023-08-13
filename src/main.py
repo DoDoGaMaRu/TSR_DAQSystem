@@ -1,4 +1,6 @@
 import asyncio
+import time
+import random
 
 from network import TCPClient
 
@@ -11,13 +13,15 @@ machine_name = 'test'
 tcp_client = TCPClient(host=HOST,
                        port=PORT,
                        name=machine_name)
-loop = asyncio.get_event_loop()
 
 
 async def temp():
     while True:
-        await tcp_client.send_data(event='',
-                             data=input('send : '))
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
+        print('data create')
+        if not tcp_client.is_closing():
+            tcp_client.send_data(event='vib', data=random.random())
 
-loop.run_until_complete(temp())
+
+if __name__ == '__main__':
+    asyncio.get_event_loop().run_until_complete(temp())

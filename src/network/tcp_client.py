@@ -67,7 +67,4 @@ class TCPClient:
         print('data send')
 
     def is_closing(self):
-        if self.protocol is None:
-            return True
-        else:
-            return self.protocol.is_closing()
+        return self.protocol is None or self.protocol.is_closing()

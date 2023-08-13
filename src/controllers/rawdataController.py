@@ -2,6 +2,7 @@ from .csvController import CsvController
 from config import FileConfig
 from typing import Dict
 
+
 class RawdataController:
     def __new__(cls):
         if not hasattr(cls, '_instance'):
@@ -17,12 +18,6 @@ class RawdataController:
                                                       header=list(message.keys()),
                                                       directory=FileConfig.DIRECTORY,
                                                       external_directory=FileConfig.EXTERNAL_DIRECTORY)
-        size = 0
-        cols = []
-        for key in message.keys():
-            if key != 'time':
-                cols.append(message[key])
-                size = len(message[key])
-
-        cols.insert(0, [message['time'] for _ in range(size)])
+        cols = list(message.values())
+        cols[0] = [message['time'] for _ in range(len(cols[1]))]
         await self.cc_list[device_name].add_data(cols)

@@ -13,15 +13,12 @@ class TCPClientProtocol(Protocol):
         self.event = Event()
 
     def connection_made(self, transport: transports.WriteTransport) -> None:
+        transport.write(self.client_name.encode() + b'\o')
         self.transport = transport
-        self.transport.write(self.client_name.encode() + b'\n')
         print('connection_made')
 
     def send_data(self, event, data) -> None:
-        if not self.transport.is_closing():
-            self.transport.write(tcp_send_protocol(event=event, data=data))
-        else:
-            raise Exception("Attempted to send data but lost connection")
+        self.transport.write(tcp_send_protocol(event=event, data=data))
 
     def is_closing(self) -> bool:
         return self.transport.is_closing()
@@ -50,10 +47,7 @@ class TCPClient:
         self.protocol = None
         self.conn = None
 
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.create_connection())
-
-    async def create_connection(self):
+    async def permanent_connection(self):
         loop = asyncio.get_event_loop()
 
         while True:
@@ -67,7 +61,6 @@ class TCPClient:
 
     def send_data(self, event, data) -> None:
         self.protocol.send_data(event=event, data=data)
-        print('data send')
 
     def is_closing(self):
         return self.protocol is None or self.protocol.is_closing()

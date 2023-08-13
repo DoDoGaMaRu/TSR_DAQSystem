@@ -13,9 +13,8 @@ class ClientConfig:
 
 
 class SensorConfig:
-    RATE: int = cfg['SENSOR']['RATE'] if int(cfg['SENSOR']['RATE']) > 2500 else 2500
-    NUMBER_OF_SAMPLES = cfg['SENSOR']['RATE']
     MIN_SAMPLING_RATE = 2400
-    READ_COUNT: int = cfg['SENSOR']['READ_COUNT']
+    RATE: int = cfg['SENSOR']['RATE'] if int(cfg['SENSOR']['RATE']) > MIN_SAMPLING_RATE else MIN_SAMPLING_RATE
+    NUMBER_OF_SAMPLES = cfg['SENSOR']['RATE']
     READ_TIMEOUT: int = cfg['SENSOR']['READ_TIMEOUT']
     DEVICES: list = cfg['SENSOR']['DEVICES']

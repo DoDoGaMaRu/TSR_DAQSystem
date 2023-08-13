@@ -5,8 +5,6 @@ from asyncio import Protocol, Event, transports
 # custom module
 from .protocols import tcp_send_protocol
 
-TIMEOUT = 10
-
 
 class TCPClientProtocol(Protocol):
     def __init__(self, client_name):
@@ -38,10 +36,15 @@ class TCPClientProtocol(Protocol):
 
 
 class TCPClient:
-    def __init__(self, host, port, name):
+    def __init__(self,
+                 host: str,
+                 port: int,
+                 name: str,
+                 timeout: int = 30):
         self.host = host
         self.port = port
         self.name = name
+        self.timeout = timeout
 
         self.transport = None
         self.protocol = None
@@ -60,7 +63,7 @@ class TCPClient:
                 await self.protocol.wait()
             except ConnectionRefusedError:
                 print('disconnected')
-                await asyncio.sleep(TIMEOUT)
+                await asyncio.sleep(self.timeout)
 
     def send_data(self, event, data) -> None:
         self.protocol.send_data(event=event, data=data)

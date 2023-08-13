@@ -14,21 +14,22 @@ class SensorType(Enum):
 
 
 @dataclass
-class SensorConf:
+class DeviceConf:
     sensor_type: SensorType = None
     channel: str = None
 
 
 class Sensor:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.task = nidaqmx.Task()
         self.read_count = 1
 
-    def _add_sensor(self, channel: SensorConf):
-        if channel.sensor_type == SensorType.VIB:
-            self._add_vib_channel(channel.channel)
-        elif channel.sensor_type == SensorType.TEMP:
-            self._add_temp_channel(channel.channel)
+    def _add_device(self, device: DeviceConf):
+        if device.sensor_type == SensorType.VIB:
+            self._add_vib_channel(device.channel)
+        elif device.sensor_type == SensorType.TEMP:
+            self._add_temp_channel(device.channel)
 
     def _add_vib_channel(self, channel: str):
         self.task.ai_channels.add_ai_voltage_chan(channel)
@@ -51,17 +52,17 @@ class Sensor:
         return self.task.read(number_of_samples_per_channel=self.read_count, timeout=10.0)
 
     @classmethod
-    def of(cls, sensor_conf: Union[SensorConf, List[SensorConf]], rate: int, samples_per_channel: int):
-        instance = cls()
+    def of(cls, name, sensor_conf: Union[DeviceConf, List[DeviceConf]], rate: int, samples_per_channel: int):
+        instance = cls(name)
 
-        if isinstance(sensor_conf, SensorConf):
-            instance._add_sensor(sensor_conf)
+        if isinstance(sensor_conf, DeviceConf):
+            instance._add_device(sensor_conf)
             instance._set_timing(rate, samples_per_channel)
             instance._set_sample_count(rate)
 
         elif isinstance(sensor_conf, List):
             for s in sensor_conf:
-                instance._add_sensor(s)
+                instance._add_device(s)
             instance._set_timing(rate, samples_per_channel)
 
         return instance

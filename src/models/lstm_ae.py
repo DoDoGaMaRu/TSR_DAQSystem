@@ -1,12 +1,20 @@
 import os
+
+import keras.models
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import logging
 
 from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
 from sklearn.model_selection import train_test_split
 from config import ModelConfig, SensorConfig
+from tqdm import tqdm
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class Encoder(Model):
@@ -42,15 +50,19 @@ class Decoder(Model):
 
 
 class LstmAE(Model):
-    def __init__(self, input_dim):
+    def __init__(self):
         super(LstmAE, self).__init__()
+        self.encoder = Encoder(ModelConfig.SEQ_LEN, ModelConfig.LATENT_DIM)
+        self.decoder = Decoder(ModelConfig.INPUT_DIM, ModelConfig.LATENT_DIM)
 
-        self.seq_length = ModelConfig.SEQ_LEN
+        self.seq_len = ModelConfig.SEQ_LEN
         self.latent_dim = ModelConfig.LATENT_DIM
+        self.input_dim = ModelConfig.INPUT_DIM
         self.test_size = ModelConfig.TEST_SIZE
+        self.learning_rate = ModelConfig.LEARNING_RATE
 
-        self.encoder = Encoder(self.seq_length, self.latent_dim)
-        self.decoder = Decoder(input_dim, self.latent_dim)
+        self.train_input = None
+        self.test_input = None
 
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
@@ -59,13 +71,11 @@ class LstmAE(Model):
         return decoded
 
     def _get_data(self, data_path: str) -> tuple:
-        columns = []
-        for device_config in SensorConfig.DEVICES:
-            for channel_name in device_config.CHANNEL_NAMES:
-                columns.append(channel_name)
+        logger.info("데이터 추출 중")
+        columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
 
         df = pd.DataFrame()
-        for column in columns:
+        for column in tqdm(columns):
             for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                 for file in files:
                     if '.csv' in file:
@@ -76,46 +86,45 @@ class LstmAE(Model):
         train, test = train_test_split(df, test_size=self.test_size, shuffle=False)
         return train, test
 
-    def _data_to_input(self, data: tuple) -> tuple:
+    def _data_to_input(self, data: tuple) -> None:
         # LSTM의 입력 데이터로 변환하는 메소드
         # (입력 데이터 수, 시퀀스 길이, 사용할 컬럼 수)의 형태가 되어야 함
-        train_input = []
-        test_input = []
+        train_list = []
+        test_list = []
         train, test = data
 
-        for i in range(len(train) - self.seq_len):
-            train_input.append(train.iloc[i:(i + self.seq_len)].values)
-        for i in range(len(test) - self.seq_len):
-            test_input.append(test.iloc[i:(i + self.seq_len)].values)
+        logger.info("훈련 데이터 변환 중")
+        #for i in tqdm(range(len(train) - self.seq_len)):
+        #    train_list.append(train.iloc[i:(i + self.seq_len)].values)
+        logger.info("시험 데이터 변환 중")
+        for i in tqdm(range(len(test) - self.seq_len)):
+            test_list.append(test.iloc[i:(i + self.seq_len)].values)
 
-        return np.array(train_input), np.array(test_input)
+        self.train_input = np.array(train_list)
+        self.test_input = np.array(test_list)
 
-    def train(self):
-        pass
-        # train, test, scaler, _ = self._get_data('resources/data/jun_20230517_cDAQ1Mod1_ai0.csv')
-        # # get train and test data
-        # trainX = to_sequences(train[['Close']], seq_len)
-        # print(trainX[0:5, 0, 0], train.head(5))
-        #
-        # input_dim = trainX.shape[2]
-        #
-        # # specify learning rate
-        # learning_rate = 0.001
-        # # create an Adam optimizer with the specified learning rate
-        # optimizer = Adam(learning_rate=learning_rate)
-        #
-        # # create lstm_ae agent
-        # lstm_ae = LstmAE(seq_len, input_dim, latent_dim)
-        # lstm_ae.compile(optimizer=optimizer, loss='mse')
-        #
-        # # train
-        # history = lstm_ae.fit(trainX, trainX, epochs=100, batch_size=32, validation_split=0.1, verbose=2)
-        #
-        # # save weights
-        # lstm_ae.save_weights("./save_weights/lstm_ae.h5")
-        #
-        # # plotting
-        # plt.plot(history.history['loss'], label='Training loss')
-        # plt.plot(history.history['val_loss'], label='Validation loss')
-        # plt.legend()
-        # plt.show()
+    def train(self, data_path: str):
+        logger.info("학습 시작")
+        data = self._get_data(data_path)
+        self._data_to_input(data)
+
+        # specify learning rate
+        learning_rate = self.learning_rate
+        # create an Adam optimizer with the specified learning rate
+        optimizer = Adam(learning_rate=learning_rate)
+
+        self.compile(optimizer=optimizer, loss='mse')
+
+        # train
+        history = self.fit(self.test_input, self.test_input, epochs=1, batch_size=5, validation_split=0.1, verbose=1)
+
+        # save weights
+        self.save_weights("lstm_ae.h5")
+        logger.info("모델 저장 완료")
+
+        # plotting
+        plt.plot(history.history['loss'], label='Training loss')
+        plt.plot(history.history['val_loss'], label='Validation loss')
+        plt.legend()
+        plt.show()
+        logger.info("학습 종료")

@@ -35,3 +35,13 @@ class SensorConfig:
 class FileConfig:
     DIRECTORY           : str = cfg['FILE']['DIRECTORY']
     EXTERNAL_DIRECTORY  : str = cfg['FILE']['EXTERNAL_DIRECTORY'] if cfg['FILE']['EXTERNAL_DIRECTORY'] != 'None' else None
+
+
+class ModelConfig:
+    SEQ_LEN             : int = cfg['MODEL']['SEQ_LEN']
+    LATENT_DIM          : int = cfg['MODEL']['LATENT_DIM']
+    INPUT_DIM           : int = len([channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES])
+    TEST_SIZE           : float = cfg['MODEL']['TEST_SIZE']
+    LEARNING_RATE       : float = cfg['MODEL']['LEARNING_RATE']
+    EPOCH               : int = cfg['MODEL']['EPOCH']
+    BATCH_SIZE          : int = cfg['MODEL']['BATCH_SIZE']

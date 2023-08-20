@@ -1,17 +1,14 @@
 import os
-
-import keras.models
+import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import logging
 
 from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
 from sklearn.model_selection import train_test_split
 from config import ModelConfig, SensorConfig
-from tqdm import tqdm
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -60,9 +57,8 @@ class LstmAE(Model):
         self.input_dim = ModelConfig.INPUT_DIM
         self.test_size = ModelConfig.TEST_SIZE
         self.learning_rate = ModelConfig.LEARNING_RATE
-
-        self.train_input = None
-        self.test_input = None
+        self.epoch = ModelConfig.EPOCH
+        self.batch_size = ModelConfig.BATCH_SIZE
 
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
@@ -71,60 +67,74 @@ class LstmAE(Model):
         return decoded
 
     def _get_data(self, data_path: str) -> tuple:
-        logger.info("데이터 추출 중")
+        # 하루치 데이터 반환
         columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
 
-        df = pd.DataFrame()
-        for column in tqdm(columns):
+        file_count = 10000000
+        for column in columns:
+            cur_file_count = 0
             for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                 for file in files:
                     if '.csv' in file:
+                        cur_file_count = cur_file_count + 1
+            file_count = min(file_count, cur_file_count)
+
+        df = pd.DataFrame()
+        for idx in range(file_count):
+            for column in columns:
+                sensor_df = pd.DataFrame()
+                for (root, directories, files) in os.walk(f'{data_path}/{column}'):
+                    file = files[idx]
+                    if '.csv' in file:
                         file_path = os.path.join(root, file)
                         cur_df = pd.read_csv(file_path, names=['time', column])
-                        df[column] = cur_df[column]
+                        sensor_df[column] = cur_df[column]
+                df[column] = sensor_df[column]
 
-        train, test = train_test_split(df, test_size=self.test_size, shuffle=False)
-        return train, test
+            data = train_test_split(df, test_size=self.test_size, shuffle=False)
+            yield self._data_to_input(data)
 
-    def _data_to_input(self, data: tuple) -> None:
+    def _data_to_input(self, data: tuple) -> tuple:
         # LSTM의 입력 데이터로 변환하는 메소드
         # (입력 데이터 수, 시퀀스 길이, 사용할 컬럼 수)의 형태가 되어야 함
         train_list = []
         test_list = []
         train, test = data
 
-        logger.info("훈련 데이터 변환 중")
-        #for i in tqdm(range(len(train) - self.seq_len)):
-        #    train_list.append(train.iloc[i:(i + self.seq_len)].values)
-        logger.info("시험 데이터 변환 중")
-        for i in tqdm(range(len(test) - self.seq_len)):
+#        for i in range(len(train) - self.seq_len):
+#            train_list.append(train.iloc[i:(i + self.seq_len)].values)
+        for i in range(len(test) - self.seq_len):
             test_list.append(test.iloc[i:(i + self.seq_len)].values)
 
-        self.train_input = np.array(train_list)
-        self.test_input = np.array(test_list)
+        return np.array(train_list), np.array(test_list)
 
     def train(self, data_path: str):
         logger.info("학습 시작")
-        data = self._get_data(data_path)
-        self._data_to_input(data)
-
-        # specify learning rate
         learning_rate = self.learning_rate
-        # create an Adam optimizer with the specified learning rate
         optimizer = Adam(learning_rate=learning_rate)
-
         self.compile(optimizer=optimizer, loss='mse')
 
-        # train
-        history = self.fit(self.test_input, self.test_input, epochs=1, batch_size=5, validation_split=0.1, verbose=1)
+        histories = []
+        for i in range(self.epoch):
+            cur_history = []
+            for train, test in self._get_data(data_path):
+                history = self.fit(x=test,
+                                   y=test,
+                                   batch_size=self.batch_size,
+                                   epochs=1,
+                                   verbose=0)
+                cur_history.append(history.history['loss'])
+            histories.append(np.mean(cur_history))
+            logger.info(f"epoch : {i + 1}/{self.epoch}, loss : {np.mean(cur_history)}")
 
         # save weights
         self.save_weights("lstm_ae.h5")
         logger.info("모델 저장 완료")
+        # 로드하기 전에 아래 코드 실행 필수
+        # model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
 
         # plotting
-        plt.plot(history.history['loss'], label='Training loss')
-        plt.plot(history.history['val_loss'], label='Validation loss')
+        plt.plot(histories)
         plt.legend()
         plt.show()
         logger.info("학습 종료")

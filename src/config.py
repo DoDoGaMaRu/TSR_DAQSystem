@@ -43,3 +43,5 @@ class ModelConfig:
     INPUT_DIM           : int = len([channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES])
     TEST_SIZE           : float = cfg['MODEL']['TEST_SIZE']
     LEARNING_RATE       : float = cfg['MODEL']['LEARNING_RATE']
+    EPOCH               : int = cfg['MODEL']['EPOCH']
+    BATCH_SIZE          : int = cfg['MODEL']['BATCH_SIZE']

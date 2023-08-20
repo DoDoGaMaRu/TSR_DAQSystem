@@ -8,10 +8,6 @@ SENSOR:
   RATE: 30
   READ_TIMEOUT: 10
   DEVICES:
-  - NAME: 'temp'
-    TYPE: 'TEMP'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['temp_ai0']
   - NAME: 'vib'
     TYPE: 'VIB'
     CHANNEL: 'ai0:1'
@@ -26,3 +22,5 @@ MODEL:
   LATENT_DIM: 64
   TEST_SIZE: 0.001
   LEARNING_RATE: 0.001
+  EPOCH: 3
+  BATCH_SIZE: 5

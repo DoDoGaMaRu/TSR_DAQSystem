@@ -10,17 +10,8 @@ SENSOR:
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-<<<<<<< HEAD
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m1_vib']
-  - NAME: 'temp'
-    TYPE: 'TEMP'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m2_temp']
-=======
     CHANNEL: 'ai0:1'
     CHANNEL_NAMES: ['vib_ai0', 'vib_ai1']
->>>>>>> wintee
 
 FILE:
   DIRECTORY: 'data'

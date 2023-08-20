@@ -10,13 +10,17 @@ SENSOR:
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m1_vib']
-  - NAME: 'temp'
-    TYPE: 'TEMP'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m2_temp']
+    CHANNEL: 'ai0:1'
+    CHANNEL_NAMES: ['vib_ai0', 'vib_ai1']
 
 FILE:
   DIRECTORY: 'data'
   EXTERNAL_DIRECTORY: 'data'
+
+MODEL:
+  SEQ_LEN: 30
+  LATENT_DIM: 64
+  TEST_SIZE: 0.001
+  LEARNING_RATE: 0.001
+  EPOCH: 3
+  BATCH_SIZE: 5

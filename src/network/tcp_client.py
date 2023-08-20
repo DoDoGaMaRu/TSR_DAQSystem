@@ -15,7 +15,7 @@ class TCPClientProtocol(Protocol):
     def connection_made(self, transport: transports.WriteTransport) -> None:
         transport.write(self.client_name.encode() + b'\o')
         self.transport = transport
-        print('connection_made')
+        print('connection made')
 
     def send_data(self, event, data) -> None:
         self.transport.write(tcp_send_protocol(event=event, data=data))
@@ -56,7 +56,6 @@ class TCPClient:
                 self.transport, self.protocol = await self.conn
                 await self.protocol.wait()
             except ConnectionRefusedError:
-                print('disconnected')
                 await asyncio.sleep(self.timeout)
 
     def send_data(self, event, data) -> None:

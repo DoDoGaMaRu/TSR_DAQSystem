@@ -1,5 +1,5 @@
 CLIENT:
-  HOST: 'localhost'
+  HOST: '192.168.0.8'
   PORT: 8082
   MACHINE_NAME: 'test'
   TIMEOUT: 10
@@ -8,14 +8,14 @@ SENSOR:
   RATE: 30
   READ_TIMEOUT: 10
   DEVICES:
+  - NAME: 'vib'
+    TYPE: 'VIB'
+    CHANNEL: 'ai0'
+    CHANNEL_NAMES: ['m1_vib']
   - NAME: 'temp'
     TYPE: 'TEMP'
     CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m1']
-  - NAME: 'vib'
-    TYPE: 'VIB'
-    CHANNEL: 'ai0:1'
-    CHANNEL_NAMES: ['m1', 'm2']
+    CHANNEL_NAMES: ['m2_temp']
 
 FILE:
   DIRECTORY: 'data'

@@ -52,16 +52,16 @@ class Sensor:
         return self.task.read(number_of_samples_per_channel=self.read_count, timeout=10.0)
 
     @classmethod
-    def of(cls, name, sensor_conf: Union[DeviceConf, List[DeviceConf]], rate: int, samples_per_channel: int):
+    def of(cls, name, device_conf: Union[DeviceConf, List[DeviceConf]], rate: int, samples_per_channel: int):
         instance = cls(name)
 
-        if isinstance(sensor_conf, DeviceConf):
-            instance._add_device(sensor_conf)
+        if isinstance(device_conf, DeviceConf):
+            instance._add_device(device_conf)
             instance._set_timing(rate, samples_per_channel)
             instance._set_sample_count(rate)
 
-        elif isinstance(sensor_conf, List):
-            for s in sensor_conf:
+        elif isinstance(device_conf, List):
+            for s in device_conf:
                 instance._add_device(s)
             instance._set_timing(rate, samples_per_channel)
 

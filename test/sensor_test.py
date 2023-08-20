@@ -11,12 +11,12 @@ loop = asyncio.get_event_loop()
 vib_conf = DeviceConf(sensor_type=SensorType.VIB,
                       channel=vib_channel)
 
-vib_sensor = Sensor.of(sensor_conf=vib_conf, rate=rate, samples_per_channel=rate * 2)
+vib_sensor = Sensor.of(name='temp', device_conf=vib_conf, rate=rate, samples_per_channel=rate * 2)
 
 
 temp_conf = DeviceConf(sensor_type=SensorType.TEMP,
                        channel=temp_channel)
-temp_sensor = Sensor.of(sensor_conf=temp_conf, rate=rate, samples_per_channel=rate * 2)
+temp_sensor = Sensor.of(name='vib', device_conf=temp_conf, rate=rate, samples_per_channel=rate * 2)
 
 
 async def read_loop():

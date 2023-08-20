@@ -34,7 +34,6 @@ class SensorHandler:
         await self.rdc.add_data(self.sensor.name, message)
         if not self.tcp_client.is_closing():
             self.tcp_client.send_data(event=self.sensor.name, data=message)
-            print('data send')
 
 
 def _get_sensor_message(time_, channel_names, data_list):

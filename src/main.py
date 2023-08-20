@@ -4,9 +4,9 @@ from typing import List
 
 import nidaqmx.errors
 
+from config import ClientConfig, SensorConfig
 from network import TCPClient
 from daq import Sensor, SensorType, DeviceConf
-from config import ClientConfig, SensorConfig
 from sensorHandler import SensorHandler
 
 
@@ -23,8 +23,8 @@ def sensor_handler_load(tcp_client: TCPClient) -> List[SensorHandler]:
     for devices_conf in SensorConfig.DEVICES:
         conf = DeviceConf(sensor_type=SensorType.__members__[devices_conf.TYPE],
                           channel=f"{devices_conf.NAME}/{devices_conf.CHANNEL}")
-        sensor = Sensor.of(name=devices_conf.NAME,
-                           sensor_conf=conf,
+        sensor = Sensor.of(name=f'{devices_conf.TYPE}:{devices_conf.NAME}',
+                           device_conf=conf,
                            rate=SensorConfig.RATE,
                            samples_per_channel=SensorConfig.RATE*2)
         sensor_handler = SensorHandler(sensor=sensor,
@@ -43,6 +43,7 @@ async def sensor_read_loop(sensor_handler: SensorHandler):
             pass
         except Exception as err:
             print(f'정의되지 않은 오류\n{str(err)}')
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()

@@ -10,8 +10,22 @@ SENSOR:
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-    CHANNEL: 'ai0:1'
-    CHANNEL_NAMES: ['vib_ai0', 'vib_ai1']
+    CHANNEL: 'ai0'
+    CHANNEL_NAMES: ['m1_vib']
+  - NAME: 'temp'
+    TYPE: 'TEMP'
+    CHANNEL: 'ai0'
+    CHANNEL_NAMES: ['m2_temp']
+
+MACHINE:
+  - NAME: 'test1'
+    CHANNEL_NAMES: []
+    FAULT_DETECT: False
+    FAULT_DETECT_MODEL: ''
+  - NAME: 'test2'
+    CHANNEL_NAMES: []
+    FAULT_DETECT: False
+    FAULT_DETECT_MODEL: ''
 
 FILE:
   DIRECTORY: 'data'

@@ -23,7 +23,7 @@ def sensor_handler_load(tcp_client: TCPClient) -> List[SensorHandler]:
     for devices_conf in SensorConfig.DEVICES:
         conf = DeviceConf(sensor_type=SensorType.__members__[devices_conf.TYPE],
                           channel=f"{devices_conf.NAME}/{devices_conf.CHANNEL}")
-        sensor = Sensor.of(name=f'{devices_conf.TYPE}:{devices_conf.NAME}',
+        sensor = Sensor.of(name=f'{devices_conf.TYPE}.{devices_conf.NAME}',
                            device_conf=conf,
                            rate=SensorConfig.RATE,
                            samples_per_channel=SensorConfig.RATE*2)

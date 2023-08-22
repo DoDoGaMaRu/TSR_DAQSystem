@@ -1,35 +1,56 @@
-CLIENT:
-  HOST: '192.168.0.8'
-  PORT: 8082
-  MACHINE_NAME: 'test'
-  TIMEOUT: 10
-
-SENSOR:
+DAQ:
   RATE: 30
-  READ_TIMEOUT: 10
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m1_vib']
-  - NAME: 'temp'
-    TYPE: 'TEMP'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['m2_temp']
+    CHANNELS: ['ai0', 'ai1', 'ai2']
+    CHANNEL_NAMES: ['pump1_vib', 'pump2_vib', 'm2_vib2_right']
+  - NAME: 'vib2'
+    TYPE: 'VIB'
+    CHANNELS: ['ai0', 'ai1']
+    CHANNEL_NAMES: ['coating_vib1', 'coating_vib2']
+#  - NAME: 'temp'
+#    TYPE: 'TEMP'
+#    CHANNELS: ['ai0']
+#    CHANNEL_NAMES: ['m1_temp']
+
 
 MACHINE:
-  - NAME: 'test1'
-    CHANNEL_NAMES: []
-    FAULT_DETECT: False
-    FAULT_DETECT_MODEL: ''
-  - NAME: 'test2'
-    CHANNEL_NAMES: []
-    FAULT_DETECT: False
-    FAULT_DETECT_MODEL: ''
+- NAME: 'VacuumPump1'
+  CHANNEL_NAMES: ['pump1_vib']
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: False
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  FAULT_DETECT_MODEL: ''
+  THRESHOLD: 500
+
+- NAME: 'VacuumPump2'
+  CHANNEL_NAMES: ['pump2_vib']
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: False
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  FAULT_DETECT_MODEL: ''
+  THRESHOLD: 500
+
+- NAME: 'CoatingMachine'
+  CHANNEL_NAMES: ['coating_vib2', 'coating_vib1']
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: True
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  FAULT_DETECT_MODEL: ''
+  THRESHOLD: 500
+
 
 FILE:
-  DIRECTORY: 'data'
-  EXTERNAL_DIRECTORY: 'data'
+  SAVE_PATH: 'data'
+  SEND_PATH:
+
 
 MODEL:
   SEQ_LEN: 30

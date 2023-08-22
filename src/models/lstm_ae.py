@@ -8,7 +8,7 @@ from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
 from sklearn.model_selection import train_test_split
-from config import ModelConfig, SensorConfig
+from last.config import ModelConfig, SensorConfig
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

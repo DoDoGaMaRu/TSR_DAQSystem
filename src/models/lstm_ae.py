@@ -100,16 +100,16 @@ class LstmAE(Model):
                         sensor_df[column] = cur_df[column]
                 df[column] = sensor_df[column]
 
-            yield self._data_to_input(df)
+            yield self._data_to_input(self.scaler.fit_transform(df))
 
-    def _data_to_input(self, data: DataFrame) -> object:
+    def _data_to_input(self, data: list) -> object:
         # LSTM의 입력 데이터로 변환하는 메소드
         # (입력 데이터 수, 시퀀스 길이, 사용할 컬럼 수)의 형태가 되어야 함
         data_list = []
 
         logger.info("데이터 변환중")
         for i in tqdm(range(len(data) - self.seq_len)):
-            data_list.append(data.iloc[i:(i + self.seq_len)].values)
+            data_list.append(data[i:(i + self.seq_len)])
 
         return np.array(data_list)
 

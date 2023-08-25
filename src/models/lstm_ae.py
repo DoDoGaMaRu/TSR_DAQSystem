@@ -1,16 +1,19 @@
-import collections
 import os
 import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
+from sklearn.preprocessing import StandardScaler
 from pandas import DataFrame
 from config import ModelConfig, SensorConfig
+from tqdm import tqdm
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -60,24 +63,29 @@ class LstmAE(Model):
         self.epoch = ModelConfig.EPOCH
         self.batch_size = ModelConfig.BATCH_SIZE
 
+        self.scaler = StandardScaler()
+
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
         decoded = self.decoder(z_rep)
 
         return decoded
 
-    def _get_data(self, data_path: str) -> collections.Iterable:
+    def _get_data(self, data_path: str):
         # 하루치 데이터 반환
         columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
+        logger.info(f'식별된 센서 : {columns}')
 
         file_count = 10000000
-        for column in columns:
+        logger.info('파일 개수 찾는 중')
+        for column in tqdm(columns):
             cur_file_count = 0
             for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                 for file in files:
                     if '.csv' in file:
                         cur_file_count = cur_file_count + 1
             file_count = min(file_count, cur_file_count)
+        logger.info(f'파일 개수 : {file_count}')
 
         df = pd.DataFrame()
         for idx in range(file_count):
@@ -86,6 +94,7 @@ class LstmAE(Model):
                 for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                     file = files[idx]
                     if '.csv' in file:
+                        logger.info(f'{idx + 1}번째 파일, {file}')
                         file_path = os.path.join(root, file)
                         cur_df = pd.read_csv(file_path, names=['time', column])
                         sensor_df[column] = cur_df[column]
@@ -98,7 +107,8 @@ class LstmAE(Model):
         # (입력 데이터 수, 시퀀스 길이, 사용할 컬럼 수)의 형태가 되어야 함
         data_list = []
 
-        for i in range(len(data) - self.seq_len):
+        logger.info("데이터 변환중")
+        for i in tqdm(range(len(data) - self.seq_len)):
             data_list.append(data.iloc[i:(i + self.seq_len)].values)
 
         return np.array(data_list)
@@ -117,10 +127,12 @@ class LstmAE(Model):
                                    y=data,
                                    batch_size=self.batch_size,
                                    epochs=1,
-                                   verbose=0)
+                                   verbose=1,
+                                   workers=4)
+                logger.info("학습 완료")
                 cur_history.append(history.history['loss'])
             histories.append(np.mean(cur_history))
-            logger.info(f"epoch : {i + 1}/{self.epoch}, loss : {np.mean(cur_history)}")
+            logger.info(f"{datetime.now()} epoch : {i + 1}/{self.epoch}, loss : {np.mean(cur_history)}")
 
         self.save_weights("lstm_ae.h5")
         logger.info("모델 저장 완료")
@@ -131,3 +143,10 @@ class LstmAE(Model):
         plt.legend()
         plt.show()
         logger.info("학습 종료")
+
+    def validate(self, data_path: str):
+        logger.info("검증 시작")
+        for data in self._get_data(data_path):
+            print(data)
+            logger.info(self.predict(data))
+            break

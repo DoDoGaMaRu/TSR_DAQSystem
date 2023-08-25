@@ -44,3 +44,4 @@ class ModelConfig:
     LEARNING_RATE       : float = cfg['MODEL']['LEARNING_RATE']
     EPOCH               : int = cfg['MODEL']['EPOCH']
     BATCH_SIZE          : int = cfg['MODEL']['BATCH_SIZE']
+    THRESHOLD           : float = cfg['MODEL']['THRESHOLD']

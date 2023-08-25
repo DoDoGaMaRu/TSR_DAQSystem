@@ -10,3 +10,4 @@ matplotlib==3.7.2
 keras==2.13.1
 tensorflow-gpu==2.10.0
 tqdm==4.66.1
+seaborn==0.12.2

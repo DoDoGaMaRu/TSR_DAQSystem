@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from datetime import datetime
 
 from keras.optimizers import Adam
@@ -62,8 +63,10 @@ class LstmAE(Model):
         self.learning_rate = ModelConfig.LEARNING_RATE
         self.epoch = ModelConfig.EPOCH
         self.batch_size = ModelConfig.BATCH_SIZE
+        self.threshold = ModelConfig.THRESHOLD
 
         self.scaler = StandardScaler()
+        self.columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
 
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
@@ -73,12 +76,11 @@ class LstmAE(Model):
 
     def _get_data(self, data_path: str):
         # 하루치 데이터 반환
-        columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
-        logger.info(f'식별된 센서 : {columns}')
+        logger.info(f'식별된 센서 : {self.columns}')
 
         file_count = 10000000
         logger.info('파일 개수 찾는 중')
-        for column in tqdm(columns):
+        for column in tqdm(self.columns):
             cur_file_count = 0
             for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                 for file in files:
@@ -89,7 +91,7 @@ class LstmAE(Model):
 
         df = pd.DataFrame()
         for idx in range(file_count):
-            for column in columns:
+            for column in self.columns:
                 sensor_df = pd.DataFrame()
                 for (root, directories, files) in os.walk(f'{data_path}/{column}'):
                     file = files[idx]
@@ -145,14 +147,11 @@ class LstmAE(Model):
         logger.info("학습 종료")
 
     def eval(self, data_path: str):
-        columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in
-                   device_config.CHANNEL_NAMES]
-
         for data, raw_data in self._get_data(data_path):
             train_predict = self.predict(data)
             train_mae = np.mean(np.abs(train_predict - data), axis=1)
 
-            plt.hist(train_mae, bins=30)
+            plt.plot(train_mae)
             plt.show()
 
             for sensor_idx in range(ModelConfig.INPUT_DIM):
@@ -161,7 +160,7 @@ class LstmAE(Model):
 
                 plt.figure(figsize=(12, 6))
                 plt.plot(raw_data.index,
-                         self.scaler.inverse_transform(raw_data[columns[sensor_idx]].values.reshape(-1, 1)),
+                         self.scaler.inverse_transform(raw_data[self.columns[sensor_idx]].values.reshape(-1, 1)),
                          color='blue',
                          label='raw data')
                 plt.legend()
@@ -174,3 +173,43 @@ class LstmAE(Model):
                          label='predicted data')
                 plt.legend()
                 plt.show()
+
+    def detect(self, target: DataFrame):
+        target_input = self._data_to_input(self.scaler.fit_transform(target))
+        target_predict = self.predict(target_input)
+        target_mae = np.mean(np.abs(target_predict - target_input), axis=1)
+
+        plt.plot(target_mae)
+        plt.show()
+
+        for sensor_idx in range(ModelConfig.INPUT_DIM):
+            predicted_sensor = self.scaler.inverse_transform(target_predict[:, -1, sensor_idx].reshape(-1, 1))
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(target.index,
+                     self.scaler.inverse_transform(target[self.columns[sensor_idx]].values.reshape(-1, 1)),
+                     color='blue',
+                     label='raw data')
+            plt.legend()
+            plt.show()
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(target.index[len(target.index) - len(predicted_sensor):],
+                     predicted_sensor,
+                     color='green',
+                     label='predicted data')
+            plt.legend()
+
+            anomaly_df = pd.DataFrame(target[self.seq_len:])
+            anomaly_df['target_mae'] = target_mae
+            anomaly_df['threshold'] = self.threshold
+            anomaly_df['anomaly'] = anomaly_df['target_mae'] > anomaly_df['threshold']
+            anomaly_df[self.columns[sensor_idx]] = target[self.seq_len:][self.columns[sensor_idx]]
+
+            anomalies = anomaly_df.loc[anomaly_df['anomaly'] == True]
+
+            if not anomalies.empty:
+                sns.scatterplot(x=anomalies.index,
+                                y=self.scaler.inverse_transform(anomalies[self.columns[sensor_idx]].values.reshape(-1, 1)).flatten(),
+                                color='r')
+            plt.show()

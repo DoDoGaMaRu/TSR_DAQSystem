@@ -100,7 +100,7 @@ class LstmAE(Model):
                         sensor_df[column] = cur_df[column]
                 df[column] = sensor_df[column]
 
-            yield self._data_to_input(self.scaler.fit_transform(df))
+            yield self._data_to_input(self.scaler.fit_transform(df)), df
 
     def _data_to_input(self, data: list) -> object:
         # LSTM의 입력 데이터로 변환하는 메소드
@@ -122,7 +122,7 @@ class LstmAE(Model):
         histories = []
         for i in range(self.epoch):
             cur_history = []
-            for data in self._get_data(data_path):
+            for data, _ in self._get_data(data_path):
                 history = self.fit(x=data,
                                    y=data,
                                    batch_size=self.batch_size,
@@ -144,9 +144,33 @@ class LstmAE(Model):
         plt.show()
         logger.info("학습 종료")
 
-    def validate(self, data_path: str):
-        logger.info("검증 시작")
-        for data in self._get_data(data_path):
-            print(data)
-            logger.info(self.predict(data))
-            break
+    def eval(self, data_path: str):
+        columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in
+                   device_config.CHANNEL_NAMES]
+
+        for data, raw_data in self._get_data(data_path):
+            train_predict = self.predict(data)
+            train_mae = np.mean(np.abs(train_predict - data), axis=1)
+
+            plt.hist(train_mae, bins=30)
+            plt.show()
+
+            for sensor_idx in range(ModelConfig.INPUT_DIM):
+                predicted_sensor = train_predict[:, -1, sensor_idx].reshape(-1, 1)
+                predicted_sensor = self.scaler.inverse_transform(predicted_sensor)
+
+                plt.figure(figsize=(12, 6))
+                plt.plot(raw_data.index,
+                         self.scaler.inverse_transform(raw_data[columns[sensor_idx]].values.reshape(-1, 1)),
+                         color='blue',
+                         label='raw data')
+                plt.legend()
+                plt.show()
+
+                plt.figure(figsize=(12, 6))
+                plt.plot(raw_data.index[len(raw_data.index) - len(predicted_sensor):],
+                         predicted_sensor,
+                         color='red',
+                         label='predicted data')
+                plt.legend()
+                plt.show()

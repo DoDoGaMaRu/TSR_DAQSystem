@@ -11,7 +11,7 @@ from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
 from sklearn.preprocessing import StandardScaler
 from pandas import DataFrame
-from config import ModelConfig, SensorConfig
+from config import ModelConfig, DAQConfig
 from tqdm import tqdm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -66,7 +66,7 @@ class LstmAE(Model):
         self.threshold = ModelConfig.THRESHOLD
 
         self.scaler = StandardScaler()
-        self.columns = [channel_name for device_config in SensorConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
+        self.columns = [channel_name for device_config in DAQConfig.DEVICES for channel_name in device_config.CHANNEL_NAMES]
 
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
@@ -174,31 +174,32 @@ class LstmAE(Model):
                 plt.legend()
                 plt.show()
 
-    def detect(self, target: DataFrame):
+    def detect(self, target: DataFrame, plot_on: bool = False) -> int:
         target_input = self._data_to_input(self.scaler.fit_transform(target))
         target_predict = self.predict(target_input)
         target_mae = np.mean(np.abs(target_predict - target_input), axis=1)
 
-        plt.plot(target_mae)
-        plt.show()
+        if plot_on:
+            plt.plot(target_mae)
+            plt.show()
 
         for sensor_idx in range(ModelConfig.INPUT_DIM):
             predicted_sensor = self.scaler.inverse_transform(target_predict[:, -1, sensor_idx].reshape(-1, 1))
 
-            plt.figure(figsize=(12, 6))
-            plt.plot(target.index,
-                     self.scaler.inverse_transform(target[self.columns[sensor_idx]].values.reshape(-1, 1)),
-                     color='blue',
-                     label='raw data')
-            plt.legend()
-            plt.show()
+            if plot_on:
+                plt.figure(figsize=(12, 6))
+                plt.plot(target.index,
+                         self.scaler.inverse_transform(target[self.columns[sensor_idx]].values.reshape(-1, 1)),
+                         color='blue',
+                         label='raw data')
+                plt.legend()
 
-            plt.figure(figsize=(12, 6))
-            plt.plot(target.index[len(target.index) - len(predicted_sensor):],
-                     predicted_sensor,
-                     color='green',
-                     label='predicted data')
-            plt.legend()
+                plt.figure(figsize=(12, 6))
+                plt.plot(target.index[len(target.index) - len(predicted_sensor):],
+                         predicted_sensor,
+                         color='green',
+                         label='predicted data')
+                plt.legend()
 
             anomaly_df = pd.DataFrame(target[self.seq_len:])
             anomaly_df['target_mae'] = target_mae
@@ -208,8 +209,10 @@ class LstmAE(Model):
 
             anomalies = anomaly_df.loc[anomaly_df['anomaly'] == True]
 
-            if not anomalies.empty:
+            if plot_on:
                 sns.scatterplot(x=anomalies.index,
                                 y=self.scaler.inverse_transform(anomalies[self.columns[sensor_idx]].values.reshape(-1, 1)).flatten(),
                                 color='r')
-            plt.show()
+                plt.show()
+
+            return len(anomalies)

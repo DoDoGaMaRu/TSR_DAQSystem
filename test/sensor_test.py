@@ -1,6 +1,6 @@
 import time
 import asyncio
-from daq.sensor import Sensor, SensorType, DeviceConf
+from last.daq import Sensor, SensorType, DeviceConf
 
 
 vib_channel = 'vib/ai0:3'

@@ -54,7 +54,6 @@ def send_protocol(event, data):
 
 
 async def save_loop(msg: float) -> None:
-    # TODO 데이터 저장 로직 구현
     print('data save')
     await asyncio.sleep(1)
 

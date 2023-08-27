@@ -4,7 +4,7 @@ import shutil
 
 from typing import List
 
-from util.clock import get_day
+from util.clock import get_date
 
 
 async def save_data(path, datas):
@@ -14,28 +14,32 @@ async def save_data(path, datas):
 
 
 async def make_file_name(name: str, date: str) -> str:
-    return name + '_' + date + '.csv'
+    return f'{date}_{name}.csv'
+
+
+async def _init_dirs(directory):
+    if not os.path.exists(directory):
+        try:
+            os.makedirs(directory)
+        except:
+            pass
 
 
 class CsvController:
     def __init__(self,
-                 device_name: str,
+                 name: str,
                  header: List[str],
                  directory: str,
                  external_directory: str = None):
         self.writer = CsvWriter(header)
-        self.device_name = device_name
+        self.device_name = name
         self.directory = directory
         self.external_directory = external_directory
-        self.last_date = get_day()
-
-    async def init_dirs(self):
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
+        self.last_date = get_date()
 
     async def add_data(self, datas):
-        await self.init_dirs()
-        date = get_day()
+        await _init_dirs(self.directory)
+        date = get_date()
         path = await self.get_file_path(date)
 
         if self.external_directory is not None:
@@ -56,6 +60,7 @@ class CsvController:
         files = os.listdir(self.directory)
         files = [f for f in files if self.device_name in f]
 
+        await _init_dirs(self.external_directory)
         if os.path.isdir(self.external_directory):
             for file_name in files:
                 src_path = os.path.join(self.directory, file_name)

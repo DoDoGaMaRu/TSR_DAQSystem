@@ -10,17 +10,27 @@ SENSOR:
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-    CHANNEL: 'ai0'
-    CHANNEL_NAMES: ['cDAQ1Mod1_ai0']
+    CHANNEL: 'ai0:1'
+    CHANNEL_NAMES: ['vib_ai0', 'vib_ai1']
+
+MACHINE:
+  - NAME: 'test1'
+    CHANNEL_NAMES: [ ]
+    FAULT_DETECT: False
+    FAULT_DETECT_MODEL: ''
+  - NAME: 'test2'
+    CHANNEL_NAMES: [ ]
+    FAULT_DETECT: False
+    FAULT_DETECT_MODEL: ''
 
 FILE:
   DIRECTORY: 'data'
   EXTERNAL_DIRECTORY: 'data'
 
 MODEL:
-  SEQ_LEN: 3
+  SEQ_LEN: 30
   LATENT_DIM: 64
+  TEST_SIZE: 0.001
   LEARNING_RATE: 0.001
   EPOCH: 3
-  BATCH_SIZE: 50
-  THRESHOLD: 1
+  BATCH_SIZE: 5

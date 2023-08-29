@@ -101,6 +101,7 @@ class LstmAE(Model):
                         cur_df = pd.read_csv(file_path, names=['time', column])
                         sensor_df[column] = cur_df[column]
                 df[column] = sensor_df[column]
+                df.dropna(axis=0, inplace=True)
 
             yield self._data_to_input(self.scaler.fit_transform(df)), df
 
@@ -141,6 +142,7 @@ class LstmAE(Model):
         # 로드하기 전에 아래 코드 실행 필수
         # model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
 
+        print(histories)
         plt.plot(histories)
         plt.legend()
         plt.show()
@@ -148,7 +150,9 @@ class LstmAE(Model):
 
     def eval(self, data_path: str):
         for data, raw_data in self._get_data(data_path):
-            train_predict = self.predict(data)
+            train_predict = self.predict(x=data,
+                                         batch_size=self.batch_size,
+                                         workers=4)
             train_mae = np.mean(np.abs(train_predict - data), axis=1)
 
             plt.plot(train_mae)
@@ -176,7 +180,9 @@ class LstmAE(Model):
 
     def detect(self, target: DataFrame, plot_on: bool = False) -> int:
         target_input = self._data_to_input(self.scaler.fit_transform(target))
-        target_predict = self.predict(target_input)
+        target_predict = self.predict(x=target_input,
+                                      batch_size=self.batch_size,
+                                      workers=4)
         target_mae = np.mean(np.abs(target_predict - target_input), axis=1)
 
         if plot_on:
@@ -185,6 +191,13 @@ class LstmAE(Model):
 
         for sensor_idx in range(ModelConfig.INPUT_DIM):
             predicted_sensor = self.scaler.inverse_transform(target_predict[:, -1, sensor_idx].reshape(-1, 1))
+
+            anomaly_df = pd.DataFrame(target[self.seq_len:])
+            anomaly_df['target_mae'] = target_mae
+            anomaly_df['threshold'] = self.threshold
+            anomaly_df['anomaly'] = anomaly_df['target_mae'] > anomaly_df['threshold']
+            anomaly_df[self.columns[sensor_idx]] = target[self.seq_len:][self.columns[sensor_idx]]
+            anomalies = anomaly_df.loc[anomaly_df['anomaly'] == True]
 
             if plot_on:
                 plt.figure(figsize=(12, 6))
@@ -198,21 +211,14 @@ class LstmAE(Model):
                 plt.plot(target.index[len(target.index) - len(predicted_sensor):],
                          predicted_sensor,
                          color='green',
-                         label='predicted data')
+                         label='predicted data',
+                         zorder=1)
                 plt.legend()
-
-            anomaly_df = pd.DataFrame(target[self.seq_len:])
-            anomaly_df['target_mae'] = target_mae
-            anomaly_df['threshold'] = self.threshold
-            anomaly_df['anomaly'] = anomaly_df['target_mae'] > anomaly_df['threshold']
-            anomaly_df[self.columns[sensor_idx]] = target[self.seq_len:][self.columns[sensor_idx]]
-
-            anomalies = anomaly_df.loc[anomaly_df['anomaly'] == True]
-
-            if plot_on:
-                sns.scatterplot(x=anomalies.index,
-                                y=self.scaler.inverse_transform(anomalies[self.columns[sensor_idx]].values.reshape(-1, 1)).flatten(),
-                                color='r')
+                if not anomalies.empty:
+                    sns.scatterplot(x=anomalies.index,
+                                    y=self.scaler.inverse_transform(anomalies[self.columns[sensor_idx]].values.reshape(-1, 1)).flatten(),
+                                    color='r',
+                                    zorder=2)
                 plt.show()
 
             return len(anomalies)

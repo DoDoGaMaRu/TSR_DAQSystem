@@ -1,24 +1,34 @@
 from models.lstm_ae import LstmAE
-import pandas as pd
-from pandas import DataFrame
 from config import ModelConfig
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
 
 model = LstmAE()
-target = pd.read_csv('resources/data/cDAQ1Mod1_ai0/jun_20230604_cDAQ1Mod1_ai0.csv', names=['time', 'cDAQ1Mod1_ai0'])
-target.drop(labels='time', axis=1, inplace=True)
-target = target[:150]
-print(target)
-temp = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-temp2 = DataFrame(temp, columns=['hi'])
-print(temp2)
 
 # 학습시 아래 코드 사용. 컨픽 수정 필요
 # model.train('resources/data')
 
 # 모델 불러오기 시 아래 코드 사용
-# model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
-# model.load_weights('lstm_ae.h5')
-#
-# model.summary()
-# # model.eval('resources/data')
+model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
+model.load_weights('lstm_ae.h5')
+
+model.summary()
+# model.eval('resources/data')
+# target = pd.read_csv('resources/data/cDAQ1Mod1_ai0/jun_20230612_cDAQ1Mod1_ai0.csv', names=['time', 'cDAQ1Mod1_ai0'])
+# target.drop(columns=['time'], axis=1, inplace=True)
 # print(model.detect(target, plot_on=True))
+
+for (root, directories, files) in os.walk('resources/data/cDAQ1Mod1_ai0'):
+    for file in files:
+        if '.csv' in file:
+            target = pd.read_csv(f'resources/data/cDAQ1Mod1_ai0/{file}', names=['time', 'cDAQ1Mod1_ai0'])
+            target.drop(columns=['time'], axis=1, inplace=True)
+            # 데이터 탐지
+            print(model.detect(target, plot_on=True))
+
+            # 데이터 plot
+            # plt.plot(target,
+            #          label=f'{file}')
+            # plt.legend()
+            # plt.show()

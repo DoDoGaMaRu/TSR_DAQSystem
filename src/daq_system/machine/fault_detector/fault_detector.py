@@ -38,8 +38,12 @@ class FaultDetector:
         if self._is_batch():
             self.data_list = list(map(lambda e: e[:self.model.batch_size], self.observations.values()))
             self._reset_observations()
-            # 해당 배치 내에서 비정상이라고 판단된 시점의 수
-            score = self.model.detect(DataFrame(self.data_list))
+
+            data = DataFrame()
+            for channel_idx in range(len(self.channel_names)):
+                data[self.channel_names[channel_idx]] = self.data_list[channel_idx]
+            score = self.model.detect(data)
+
             await self.result_handler(score)
 
     def _is_batch(self):

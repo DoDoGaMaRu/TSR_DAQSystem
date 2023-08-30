@@ -4,8 +4,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
+import time
 
+from datetime import datetime
 from keras.optimizers import Adam
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
@@ -179,6 +180,7 @@ class LstmAE(Model):
                 plt.show()
 
     def detect(self, target: DataFrame, plot_on: bool = False) -> int:
+        start_time = time.time()
         target_input = self._data_to_input(self.scaler.fit_transform(target))
         target_predict = self.predict(x=target_input,
                                       batch_size=self.batch_size,
@@ -221,4 +223,6 @@ class LstmAE(Model):
                                     zorder=2)
                 plt.show()
 
+            end_time = time.time()
+            logger.info(f'detect time : {end_time - start_time}')
             return len(anomalies)

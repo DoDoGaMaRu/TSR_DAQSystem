@@ -1,4 +1,4 @@
-from models.lstm_ae import LstmAE
+from daq_system.machine.fault_detector.lstm_ae import LstmAE
 from config import ModelConfig
 import pandas as pd
 import os
@@ -11,7 +11,7 @@ model = LstmAE()
 
 # 모델 불러오기 시 아래 코드 사용
 model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
-model.load_weights('lstm_ae.h5')
+model.load_weights('resources/model/ShotBlast.h5')
 
 model.summary()
 # model.eval('resources/data')

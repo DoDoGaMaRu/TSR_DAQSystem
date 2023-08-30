@@ -1,41 +1,12 @@
 import asyncio
 
-from typing import List, Dict
-from dataclasses import dataclass
+from typing import Dict
 
+from config import MachineConfig
 from util.clock import get_time
 from .csv_controller import CsvController
 from .data_sender import DataSender
 from .fault_detector import FaultDetector, ResultHandler
-
-
-@dataclass
-class MachineConfig:
-    NAME                : str
-    CHANNEL_NAMES       : List[str]
-
-    DATA_SEND_MODE      : bool
-    FAULT_DETECT_MODE   : bool
-
-    HOST                : str = None
-    PORT                : int = None
-    TIMEOUT             : int = 60
-
-    FAULT_DETECT_MODEL  : str = None
-    THRESHOLD           : int = None
-
-    def __post_init__(self):
-        if self.DATA_SEND_MODE:
-            if self.HOST is None:
-                raise ValueError(f'{self.NAME} : missing host')
-            if self.PORT is None:
-                raise ValueError(f'{self.NAME} : missing port')
-
-        if self.FAULT_DETECT_MODE:
-            if self.FAULT_DETECT_MODEL is None:
-                raise ValueError(f'{self.NAME} : missing model path')
-            if self.THRESHOLD is None:
-                raise ValueError(f'{self.NAME} : missing threshold')
 
 
 class AnomalyHandler(ResultHandler):

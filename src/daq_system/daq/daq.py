@@ -16,10 +16,8 @@ class DataHandler(ABC):
 
 class DAQ:
     def __init__(self,
-                 rate: int,
                  device_config: Union[DeviceConfig, List[DeviceConfig]],
                  data_handler: DataHandler):
-        self.rate = rate
         self.device_config = device_config if isinstance(device_config, List) else [device_config]
         self.data_handler = data_handler
 

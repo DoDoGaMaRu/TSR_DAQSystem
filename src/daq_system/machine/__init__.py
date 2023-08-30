@@ -1,1 +1,1 @@
-from .machine import Machine, MachineConfig
+from .machine import Machine

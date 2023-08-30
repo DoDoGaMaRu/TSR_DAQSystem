@@ -1,8 +1,9 @@
-from typing import List, Dict
 from abc import ABC, abstractmethod
-from models.lstm_ae import LstmAE
-from config import ModelConfig
+from typing import List, Dict
 from pandas import DataFrame
+
+from config import ModelConfig
+from .lstm_ae import LstmAE
 
 
 class ResultHandler(ABC):
@@ -38,8 +39,8 @@ class FaultDetector:
             self.data_list = list(map(lambda e: e[:self.model.batch_size], self.observations.values()))
             self._reset_observations()
             # 해당 배치 내에서 비정상이라고 판단된 시점의 수
-            anomalies = self.model.detect(DataFrame(self.data_list))
-            await self.result_handler(anomalies)
+            score = self.model.detect(DataFrame(self.data_list))
+            await self.result_handler(score)
 
     def _is_batch(self):
         is_batch = True

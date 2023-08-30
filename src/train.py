@@ -1,4 +1,4 @@
-from models.lstm_ae import LstmAE
+from daq_system.machine.fault_detector.lstm_ae import LstmAE
 import pandas as pd
 from pandas import DataFrame
 from config import ModelConfig

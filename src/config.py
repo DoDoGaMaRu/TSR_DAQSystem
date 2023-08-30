@@ -1,12 +1,41 @@
 import yaml
 from typing import List
+from dataclasses import dataclass
 
-from daq_system.machine import MachineConfig
 from daq_system.daq.ni_device import DeviceConfig
 
 config_file = '../src/resources/config.yml'
 with open(config_file, 'r', encoding='UTF-8') as yml:
     cfg = yaml.safe_load(yml)
+
+
+@dataclass
+class MachineConfig:
+    NAME                : str
+    CHANNEL_NAMES       : List[str]
+
+    DATA_SEND_MODE      : bool
+    FAULT_DETECT_MODE   : bool
+
+    HOST                : str = None
+    PORT                : int = None
+    TIMEOUT             : int = 60
+
+    FAULT_DETECT_MODEL  : str = None
+    THRESHOLD           : int = None
+
+    def __post_init__(self):
+        if self.DATA_SEND_MODE:
+            if self.HOST is None:
+                raise ValueError(f'{self.NAME} : missing host')
+            if self.PORT is None:
+                raise ValueError(f'{self.NAME} : missing port')
+
+        if self.FAULT_DETECT_MODE:
+            if self.FAULT_DETECT_MODEL is None:
+                raise ValueError(f'{self.NAME} : missing model path')
+            if self.THRESHOLD is None:
+                raise ValueError(f'{self.NAME} : missing threshold')
 
 
 class DAQConfig:

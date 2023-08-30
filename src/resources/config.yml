@@ -27,6 +27,7 @@ FILE:
   SAVE_PATH: 'data'
   SEND_PATH:
 
+
 MODEL:
   SEQ_LEN: 3
   LATENT_DIM: 64

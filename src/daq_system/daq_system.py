@@ -22,8 +22,7 @@ class DAQSystem:
                                  send_path=FileConfig.SEND_PATH)
                          for conf in MachineClientConfig.MACHINES]
 
-        self.daq = DAQ(rate=DAQConfig.RATE,
-                       device_config=DAQConfig.DEVICES,
+        self.daq = DAQ(device_config=DAQConfig.DEVICES,
                        data_handler=DataDivider(machines=self.machines))
 
     def run(self):

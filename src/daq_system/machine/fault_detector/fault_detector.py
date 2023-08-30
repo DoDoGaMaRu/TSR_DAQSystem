@@ -42,7 +42,7 @@ class FaultDetector:
             data = DataFrame()
             for channel_idx in range(len(self.channel_names)):
                 data[self.channel_names[channel_idx]] = self.data_list[channel_idx]
-            score = self.model.detect(data)
+            score = await self.model.detect(data)
 
             await self.result_handler(score)
 

@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import asyncio
 
 from datetime import datetime
 from keras.optimizers import Adam
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 class Trainer(BaseModel):
     def __init__(self, sensor_name: str, data_path: str):
         super(Trainer, self).__init__()
+
         self.seq_len = ModelConfig.SEQ_LEN
         self.latent_dim = ModelConfig.LATENT_DIM
         self.input_dim = ModelConfig.INPUT_DIM
@@ -40,8 +42,20 @@ class Trainer(BaseModel):
                     logger.info(f'파일 : {file}')
                     file_path = os.path.join(root, file)
                     df = pd.read_csv(file_path, names=['time', 'data'])
+                    df.drop(columns=['time'], axis=1, inplace=True)
                 df.dropna(axis=0, inplace=True)
-                yield self._data_to_input(self.scaler.fit_transform(df)), df
+
+                yield asyncio.run(self._data_to_input(self.scaler.fit_transform(df))), df
+
+    def data_plot(self):
+        for (root, directories, files) in os.walk(self.data_path):
+            for file in files:
+                if '.csv' in file:
+                    target = pd.read_csv(f'{self.data_path}/{file}', names=['time', 'data'])
+                    target.drop(columns=['time'], axis=1, inplace=True)
+                    plt.plot(target, label=f'{file}')
+                    plt.legend()
+                    plt.show()
 
     def train(self, gpu_on: bool = True, plot_on: bool = True):
         if gpu_on:

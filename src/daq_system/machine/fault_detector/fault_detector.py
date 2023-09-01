@@ -3,8 +3,7 @@ from typing import List, Dict
 from pandas import DataFrame
 
 from config import ModelConfig
-from .lstm_ae import LstmAE
-
+from model.lstm_ae import LstmAE
 
 class ResultHandler(ABC):
     @abstractmethod
@@ -18,6 +17,7 @@ class FaultDetector:
                  channel_names: List[str],
                  result_handler: ResultHandler):
 
+        # TODO 센서별로 초기화 되게끔 변경
         self.model = LstmAE()
         self.model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
         self.model.load_weights(model_path)

@@ -2,11 +2,10 @@ import numpy as np
 
 from keras.models import Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense
-from model_config import ModelConfig
 
 
 class Encoder(Model):
-    def __init__(self, seq_length, latent_dim):
+    def __init__(self, seq_length: int, latent_dim: int):
         super(Encoder, self).__init__()
 
         self.h1 = LSTM(128, return_sequences=True)
@@ -22,7 +21,7 @@ class Encoder(Model):
 
 
 class Decoder(Model):
-    def __init__(self, input_dim, latent_dim):
+    def __init__(self, input_dim: int, latent_dim: int):
         super(Decoder, self).__init__()
 
         self.h1 = LSTM(latent_dim, return_sequences=True)
@@ -38,10 +37,15 @@ class Decoder(Model):
 
 
 class BaseModel(Model):
-    def __init__(self):
+    def __init__(self, seq_len: int, input_dim: int, latent_dim: int):
         super(BaseModel, self).__init__()
-        self.encoder = Encoder(ModelConfig.SEQ_LEN, ModelConfig.LATENT_DIM)
-        self.decoder = Decoder(ModelConfig.INPUT_DIM, ModelConfig.LATENT_DIM)
+
+        self.seq_len = seq_len
+        self.input_dim = input_dim
+        self.latent_dim = latent_dim
+
+        self.encoder = Encoder(self.seq_len, self.latent_dim)
+        self.decoder = Decoder(self.input_dim, self.latent_dim)
 
     def call(self, inputs, training=None, mask=None):
         z, z_rep = self.encoder(inputs)
@@ -58,3 +62,7 @@ class BaseModel(Model):
             data_list.append(data[i:(i + self.seq_len)])
 
         return np.array(data_list)
+
+    def load(self, model_path: str) -> None:
+        self.build((None, self.seq_len, self.input_dim))
+        self.load_weights(model_path)

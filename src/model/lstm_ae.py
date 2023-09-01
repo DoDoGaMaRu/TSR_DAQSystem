@@ -7,11 +7,24 @@ import seaborn as sns
 
 from pandas import DataFrame
 from model.base_model import BaseModel
+from sklearn.preprocessing import StandardScaler
 
 
 class LstmAE(BaseModel):
-    def __init__(self):
-        super(LstmAE, self).__init__()
+    def __init__(self,
+                 seq_len: int,
+                 input_dim: int,
+                 latent_dim: int,
+                 batch_size: int,
+                 threshold: float):
+        super(LstmAE, self).__init__(seq_len=seq_len,
+                                     input_dim=input_dim,
+                                     latent_dim=latent_dim)
+
+        self.batch_size = batch_size
+        self.threshold = threshold
+
+        self.scaler = StandardScaler()
 
     async def detect(self, target: DataFrame, plot_on: bool = False) -> int:
         loop = asyncio.get_event_loop()
@@ -57,6 +70,6 @@ class LstmAE(BaseModel):
                                 zorder=2)
             plt.show()
 
-            end_time = time.time()
-            print(f'detect time : {end_time - start_time}')
-            return len(anomalies)
+        end_time = time.time()
+        print(f'detect time : {end_time - start_time}')
+        return len(anomalies)

@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 class Trainer(BaseModel):
     def __init__(self, sensor_name: str, data_path: str):
-        super(Trainer, self).__init__()
-
         self.seq_len = ModelConfig.SEQ_LEN
         self.latent_dim = ModelConfig.LATENT_DIM
         self.input_dim = ModelConfig.INPUT_DIM
@@ -26,6 +24,10 @@ class Trainer(BaseModel):
         self.epoch = ModelConfig.EPOCH
         self.batch_size = ModelConfig.BATCH_SIZE
         self.threshold = ModelConfig.THRESHOLD
+
+        super(Trainer, self).__init__(seq_len=self.seq_len,
+                                      input_dim=self.input_dim,
+                                      latent_dim=self.latent_dim)
 
         self.scaler = StandardScaler()
         self.sensor_name = sensor_name
@@ -85,9 +87,6 @@ class Trainer(BaseModel):
 
         self.save_weights(f'{self.sensor_name}.h5')
         logger.info("모델 저장 완료")
-        # 로드하기 전에 아래 코드 실행 필수
-        # model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
-
         logger.info(f'로스 값 : {histories}')
 
         if plot_on:

@@ -3,8 +3,12 @@ DAQ:
   DEVICES:
   - NAME: 'vib'
     TYPE: 'VIB'
-    CHANNELS: ['ai0']
-    CHANNEL_NAMES: ['cDAQ1Mod1_ai0']
+    CHANNELS: ['ai0', 'ai1', 'ai2', 'ai3']
+    CHANNEL_NAMES: ['shot_blast_vib', 'aro_vib1', 'aro_vib2', 'dispensing_vib']
+  - NAME: 'vib2'
+    TYPE: 'VIB'
+    CHANNELS: ['ai0', 'ai1']
+    CHANNEL_NAMES: ['pump1_vib', 'pump2_vib']
 #  - NAME: 'temp'
 #    TYPE: 'TEMP'
 #    CHANNELS: ['ai0']
@@ -12,16 +16,50 @@ DAQ:
 
 
 MACHINE:
-- NAME: 'VacuumPump1'
-  CHANNEL_NAMES: ['cDAQ1Mod1_ai0']
+- NAME: 'ShotBlast'
+  CHANNEL_NAMES: [ 'shot_blast_vib' ]
   DATA_SEND_MODE: True
   FAULT_DETECT_MODE: False
   HOST: '192.168.0.8'
   PORT: 8082
   TIMEOUT: 60
-  FAULT_DETECT_MODEL: 'lstm_ae.h5'
   THRESHOLD: 500
 
+- NAME: 'AROPump'
+  CHANNEL_NAMES: [ 'aro_vib1', 'aro_vib2' ]
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: True
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  THRESHOLD: 500
+
+- NAME: 'DispensingMachine'
+  CHANNEL_NAMES: [ 'dispensing_vib' ]
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: False
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  THRESHOLD: 500
+
+- NAME: 'VacuumPump1'
+  CHANNEL_NAMES: [ 'pump1_vib' ]
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: False
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  THRESHOLD: 500
+
+- NAME: 'VacuumPump2'
+  CHANNEL_NAMES: [ 'pump2_vib' ]
+  DATA_SEND_MODE: True
+  FAULT_DETECT_MODE: False
+  HOST: '192.168.0.8'
+  PORT: 8082
+  TIMEOUT: 60
+  THRESHOLD: 500
 
 FILE:
   SAVE_PATH: 'data'

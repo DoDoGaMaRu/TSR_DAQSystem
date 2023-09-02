@@ -50,7 +50,7 @@ class Machine:
         if self.fault_detect_mode:
             anomaly_handler = AnomalyHandler(data_sender=self.data_sender,
                                              threshold=conf.THRESHOLD)
-            self.fault_detector = FaultDetector(model_path=conf.FAULT_DETECT_MODEL,
+            self.fault_detector = FaultDetector(machine_name=self.name,
                                                 channel_names=self.channel_names,
                                                 result_handler=anomaly_handler)
 
@@ -61,7 +61,7 @@ class Machine:
 
     def _add_csv_controller(self, channel_name: str):
         self.file_writers[channel_name] = CsvController(name=channel_name,
-                                                        header=['time', channel_name],
+                                                        header=['time', 'data'],
                                                         directory=self.directory,
                                                         external_directory=self.external_directory)
 

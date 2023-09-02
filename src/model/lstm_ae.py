@@ -28,7 +28,6 @@ class LstmAE(BaseModel):
 
     async def detect(self, target: DataFrame, plot_on: bool = False) -> int:
         loop = asyncio.get_event_loop()
-        start_time = time.time()
         target_input = await self._data_to_input(self.scaler.fit_transform(target))
         target_predict = await loop.run_in_executor(None,
                                                     self.predict,
@@ -69,7 +68,4 @@ class LstmAE(BaseModel):
                                 color='r',
                                 zorder=2)
             plt.show()
-
-        end_time = time.time()
-        print(f'detect time : {end_time - start_time}')
         return len(anomalies)

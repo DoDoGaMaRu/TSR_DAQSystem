@@ -1,17 +1,33 @@
 import yaml
 
-config_file = '../src/resources/model_config.yml'
+from typing import List
+from dataclasses import dataclass
+
+
+config_file = 'resources/model_config.yml'
 with open(config_file, 'r', encoding='UTF-8') as yml:
     cfg = yaml.safe_load(yml)
 
 
-class ModelConfig:
-    SEQ_LEN             : int = cfg['MODEL']['SEQ_LEN']
-    LATENT_DIM          : int = cfg['MODEL']['LATENT_DIM']
-    INPUT_DIM           : int = 1
-    LEARNING_RATE       : float = cfg['MODEL']['LEARNING_RATE']
-    EPOCH               : int = cfg['MODEL']['EPOCH']
-    BATCH_SIZE          : int = cfg['MODEL']['BATCH_SIZE'] - SEQ_LEN
-    THRESHOLD           : float = cfg['MODEL']['THRESHOLD']
+@dataclass
+class TrainConfig:
+    SENSOR_NAME     : str
+    SEQ_LEN         : int
+    LATENT_DIM      : int
+    LEARNING_RATE   : float
+    EPOCH           : int
+    BATCH_SIZE      : int
+    THRESHOLD       : int
+    INPUT_DIM       : int = 1
 
-# TODO 실제로는 모델별로 컨픽이 여러개 있을 것이므로 수정
+    def __post_init__(self):
+        # 정보 검증
+        pass
+
+
+class Config:
+    DATA_PATH       : str = cfg['DATA_PATH']
+    TEST_PATH       : str = cfg['TEST_PATH']
+    MODEL_OUT       : str = cfg['MODEL_OUT']
+    NAME            : str = cfg['MACHINE']['NAME']
+    TRAIN           : List[TrainConfig] = [TrainConfig(**parm) for parm in cfg['TRAIN']]

@@ -3,8 +3,7 @@ from typing import List, Dict
 from pandas import DataFrame
 
 from config import ModelConfig
-from .lstm_ae import LstmAE
-
+from model.lstm_ae import LstmAE
 
 class ResultHandler(ABC):
     @abstractmethod
@@ -18,6 +17,7 @@ class FaultDetector:
                  channel_names: List[str],
                  result_handler: ResultHandler):
 
+        # TODO 센서별로 초기화 되게끔 변경
         self.model = LstmAE()
         self.model.build((None, ModelConfig.SEQ_LEN, ModelConfig.INPUT_DIM))
         self.model.load_weights(model_path)
@@ -38,8 +38,12 @@ class FaultDetector:
         if self._is_batch():
             self.data_list = list(map(lambda e: e[:self.model.batch_size], self.observations.values()))
             self._reset_observations()
-            # 해당 배치 내에서 비정상이라고 판단된 시점의 수
-            score = self.model.detect(DataFrame(self.data_list))
+
+            data = DataFrame()
+            for channel_idx in range(len(self.channel_names)):
+                data[self.channel_names[channel_idx]] = self.data_list[channel_idx]
+            score = await self.model.detect(data)
+
             await self.result_handler(score)
 
     def _is_batch(self):

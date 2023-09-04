@@ -31,7 +31,7 @@ class LstmAE(BaseModel):
         target_input = await self._data_to_input(self.scaler.fit_transform(target))
         target_predict = await loop.run_in_executor(None,
                                                     self.predict,
-                                                    target_input, self.batch_size, "auto", None, None, 10, 4, False)
+                                                    target_input, self.batch_size, 0, None, None, 10, 4, False)
         target_mae = np.mean(np.abs(target_predict - target_input), axis=1)
 
         if plot_on:

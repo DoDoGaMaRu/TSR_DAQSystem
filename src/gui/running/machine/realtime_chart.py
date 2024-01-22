@@ -47,7 +47,7 @@ class QRealtimeChart(QWidget):
             self._idx += 1
             self.series.append(self._idx, y)
 
-            if self.maximum_view < self.series.count():
+            while self.maximum_view < self.series.count():
                 self.series.remove(0)
 
             y_max = max(self.series.points(), key=lambda e: e.y()).y()

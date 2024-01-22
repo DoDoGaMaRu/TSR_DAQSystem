@@ -7,7 +7,7 @@ def temp_config() -> DAQSystemConfig:
         NIDeviceConfig(
             NAME='vib',
             TYPE=NIDeviceType.VIB,
-            RATE=300,
+            RATE=30,
             SENSORS=[
                 SensorConfig(NAME='shot_blast_vib', CHANNEL='ai0', OPTIONS={}),
                 SensorConfig(NAME='aro_vib1', CHANNEL='ai1', OPTIONS={'sensitivity': 100}),
@@ -20,14 +20,14 @@ def temp_config() -> DAQSystemConfig:
         MachineConfig(
             NAME='AROPump',
             SENSORS=['aro_vib1', 'aro_vib2'],
-            FAULT_DETECTABLE=False,
-            FAULT_THRESHOLD=0,
+            FAULT_DETECTABLE=True,
+            FAULT_THRESHOLD=10,
             DATA_SAVE_MODE=DataSaveModeConfig(
-                ACTIVATE=True,
-                PATH='C://Users//DaeHwan//Desktop'
+                ACTIVATION=True,
+                PATH='C://Users//DaeHwan//Desktop//data'
             ),
             DATA_SEND_MODE=DataSendModeConfig(
-                ACTIVATE=False
+                ACTIVATION=False
             )
         ),
         MachineConfig(
@@ -36,11 +36,14 @@ def temp_config() -> DAQSystemConfig:
             FAULT_DETECTABLE=False,
             FAULT_THRESHOLD=0,
             DATA_SAVE_MODE=DataSaveModeConfig(
-                ACTIVATE=True,
-                PATH='C://Users//DaeHwan//Desktop'
+                ACTIVATION=False,
+                PATH='C://Users//DaeHwan//Desktop//data'
             ),
             DATA_SEND_MODE=DataSendModeConfig(
-                ACTIVATE=False
+                ACTIVATION=True,
+                HOST='192.168.0.10',
+                PORT=8000,
+                TIMEOUT=60
             )
         )
     ]

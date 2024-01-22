@@ -32,10 +32,10 @@ class NIDeviceConfig:
 
 @dataclass
 class ActivableModeConfig(ABC):
-    ACTIVATE    : bool
+    ACTIVATION    : bool
 
     def __post_init__(self):
-        if self.ACTIVATE:
+        if self.ACTIVATION:
             self.valid_check()
 
     @abstractmethod

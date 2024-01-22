@@ -1,4 +1,5 @@
 import asyncio
+from typing import Dict
 
 from lib.tcp_client.tcp_client import TCPClient
 from .machine import EventHandler
@@ -33,7 +34,7 @@ class DataSender(EventHandler):
             except Exception:
                 await asyncio.sleep(self.timeout)
 
-    async def event_handle(self, event: Event, data: any) -> None:
+    async def event_handle(self, event: Event, data: Dict) -> None:
         # TODO rate가 높은 경우, 특정 크기 이하로 조정
         if not self.is_closing():
             self.protocol.send_data(event=event, data=data)

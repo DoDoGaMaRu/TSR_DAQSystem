@@ -94,11 +94,9 @@ class Machine(DataHandler):
                 'threshold': self._fault_threshold
             })
 
-    async def _event_notify(self, event: Event, data: any) -> None:
+    async def _event_notify(self, event: Event, data: Dict) -> None:
         for handler in self._event_handlers:
             try:
                 self._loop.create_task(handler.event_handle(event, data))
-            except WindowsError as err:
-                print(f'Event Handling Error : \n{str(err)}')
             except Exception as err:
                 print(f'Event Handling Error : \n{str(err)}')

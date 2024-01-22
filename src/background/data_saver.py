@@ -41,7 +41,7 @@ class DataSaver(EventHandler):
             dest_path = os.path.join(self._external_path, file_name)
             shutil.move(src_path, dest_path)
 
-    async def event_handle(self, event: Event, data: any) -> None:
+    async def event_handle(self, event: Event, data: Dict) -> None:
         if event is Event.DataUpdate:
             if self._time_event.is_day_change():
                 self._move_files()

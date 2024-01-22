@@ -5,7 +5,7 @@ from typing import List, Dict
 
 from .channel_initializers import ChannelInitializer
 
-MIN_RATE: int = 2400
+MIN_RATE: int = 3000
 
 
 class NIDevice:

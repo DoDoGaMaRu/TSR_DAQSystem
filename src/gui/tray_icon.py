@@ -25,12 +25,12 @@ class TrayIcon(QSystemTrayIcon):
         self.setToolTip("icon hover event")
         self.showMessage("DAQSystem", "System Started")
 
-    def _exit_event(self):
+    def _exit_event(self) -> None:
         self.exit_handler()
 
-    def _tray_activated(self, reason):
+    def _tray_activated(self, reason) -> None:
         if reason == QSystemTrayIcon.Trigger or reason == QSystemTrayIcon.DoubleClick:
             self._main_window.activateWindow() if self._main_window.isVisible() else self._main_window.show()
 
-    def set_exit_event(self, handler: Callable):
+    def set_exit_event(self, handler: Callable) -> None:
         self.exit_handler = handler

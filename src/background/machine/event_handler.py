@@ -1,10 +1,10 @@
 from typing import Dict
 from abc import ABC, abstractmethod
 
-from .event import Event
+from .machine_event import MachineEvent
 
 
 class EventHandler(ABC):
     @abstractmethod
-    async def event_handle(self, event: Event, data: Dict) -> None:
+    async def event_handle(self, event: MachineEvent, data: Dict) -> None:
         pass

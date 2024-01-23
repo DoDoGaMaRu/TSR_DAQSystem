@@ -6,7 +6,7 @@ from util.clock import get_date, get_time, TimeEvent
 from config.paths import DATA_DIR
 from lib.csv_writer import CsvWriter
 from .machine import EventHandler
-from .machine.event import Event
+from .machine.machine_event import MachineEvent
 
 
 class DataSaver(EventHandler):
@@ -29,7 +29,7 @@ class DataSaver(EventHandler):
         os.makedirs(self._external_path, exist_ok=True)
         for sensor in self._sensors:
             header: List[str] = ['time', 'data']
-            path = os.path.join(self._save_path, make_file_name(sensor))
+            path = os.path.join(self._save_path, f'{get_date()}_{sensor}.csv')
             self._writers[sensor] = CsvWriter(path, header)
 
     def _move_files(self):
@@ -41,8 +41,8 @@ class DataSaver(EventHandler):
             dest_path = os.path.join(self._external_path, file_name)
             shutil.move(src_path, dest_path)
 
-    async def event_handle(self, event: Event, data: Dict) -> None:
-        if event is Event.DataUpdate:
+    async def event_handle(self, event: MachineEvent, data: Dict) -> None:
+        if event is MachineEvent.DataUpdate:
             if self._time_event.is_day_change():
                 self._move_files()
                 self._init_writers()
@@ -51,7 +51,3 @@ class DataSaver(EventHandler):
             for sensor, datas in data.items():
                 datas = [[cur_time, data] for data in datas]
                 self._writers[sensor].add_datas(datas)
-
-
-def make_file_name(name: str) -> str:
-    return f'{get_date()}_{name}.csv'

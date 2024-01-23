@@ -5,7 +5,8 @@ from background import DAQSystem
 from config import ConfigLoader
 from config.paths import ICON_IMG
 from gui.main_window import MainWindow
-from gui.startup import QStartup
+from gui.setting.setting_widget import QSettingWidget
+from gui.startup import QStartupWidget
 from gui.tray_icon import TrayIcon
 from gui.running.daq_system_monitor import QDAQSystemMonitor
 
@@ -15,30 +16,32 @@ class App:
         self._app = QApplication([])
         self._app.setQuitOnLastWindowClosed(False)
 
-        self._machine_monitor = None
         self._bg_system: DAQSystem = None
 
-        self._startup_widget = QStartup(set_step=self.setting_step,
-                                        run_step=self.running_step)
-        self._main_window = MainWindow(self._startup_widget)
+        self._main_window = MainWindow(None)
+        self.startup_step()
 
         icon = QIcon(ICON_IMG)
         self._tray = TrayIcon(main_window=self._main_window, icon=icon)
         self._tray.set_exit_event(self.exit_event)
 
+    def startup_step(self) -> None:
+        startup_widget = QStartupWidget(set_step=self.setting_step,
+                                        run_step=self.running_step)
+        self._main_window.setCentralWidget(startup_widget)
+
     def setting_step(self) -> None:
-        pass
+        setting_widget = QSettingWidget()
+        setting_widget.setting_end.connect(self.startup_step)
+        self._main_window.setCentralWidget(setting_widget)
 
     def running_step(self) -> None:
-        if self._bg_system is not None:
-            self._bg_system.stop()
-
         conf = ConfigLoader.load_conf()
         self._bg_system = DAQSystem(conf)
         self._bg_system.start()
 
-        self._machine_monitor = QDAQSystemMonitor(self._bg_system)
-        self._main_window.setCentralWidget(self._machine_monitor)
+        machine_monitor = QDAQSystemMonitor(self._bg_system)
+        self._main_window.setCentralWidget(machine_monitor)
 
     def run(self) -> None:
         self._app.exec()

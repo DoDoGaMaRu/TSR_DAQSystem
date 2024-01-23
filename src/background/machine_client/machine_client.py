@@ -3,13 +3,11 @@ import pickle
 import asyncio
 from asyncio import Protocol, Event, transports
 
-from .tcp_exceptions import SerializeException
-
 SEP         : bytes = b'\o'
 SEP_LEN     : int = len(SEP)
 
 
-class TCPClient(Protocol):
+class MachineClient(Protocol):
     def __init__(self, name):
         self.name = name
 
@@ -29,9 +27,13 @@ class TCPClient(Protocol):
         print(f'{self.name} connection made')
 
     def send_data(self, event, data) -> None:
-        tcp_send_protocol(writer=self._writer,
-                          event=event,
-                          data=data)
+        try:
+            with io.BytesIO() as memfile:
+                pickle.dump((event, data), memfile)
+                serialized = memfile.getvalue() + SEP
+                self._writer.write(serialized)
+        except Exception:
+            raise RuntimeError('serialize error')
 
     def is_closing(self) -> bool:
         return self._writer.is_closing()
@@ -43,13 +45,3 @@ class TCPClient(Protocol):
 
     async def wait(self):
         await self._event.wait()
-
-
-def tcp_send_protocol(writer: asyncio.StreamWriter, event, data):
-    try:
-        with io.BytesIO() as memfile:
-            pickle.dump((event, data), memfile)
-            serialized = memfile.getvalue()
-        writer.write(serialized + SEP)
-    except Exception:
-        raise SerializeException()

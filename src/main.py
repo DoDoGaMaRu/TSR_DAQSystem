@@ -5,14 +5,36 @@ from config import *
 def temp_config() -> DAQSystemConfig:
     ni_device_confs = [
         NIDeviceConfig(
-            NAME='vib',
+            NAME='temp_device1',
+            TYPE=NIDeviceType.TEMP,
+            RATE=20,
+            SENSORS=[
+                SensorConfig(NAME='t1', CHANNEL='ai0', OPTIONS={}),
+                SensorConfig(NAME='t2', CHANNEL='ai1', OPTIONS={}),
+                SensorConfig(NAME='t3', CHANNEL='ai2', OPTIONS={}),
+                SensorConfig(NAME='t4', CHANNEL='ai3', OPTIONS={}),
+            ]
+        ),
+        NIDeviceConfig(
+            NAME='vib_device1',
             TYPE=NIDeviceType.VIB,
             RATE=30,
             SENSORS=[
-                SensorConfig(NAME='shot_blast_vib', CHANNEL='ai0', OPTIONS={}),
+                SensorConfig(NAME='shot_blast_vib', CHANNEL='ai0', OPTIONS={'sensitivity': 100}),
                 SensorConfig(NAME='aro_vib1', CHANNEL='ai1', OPTIONS={'sensitivity': 100}),
-                SensorConfig(NAME='aro_vib2', CHANNEL='ai2', OPTIONS={}),
-                SensorConfig(NAME='dispensing_vib', CHANNEL='ai3', OPTIONS={}),
+                SensorConfig(NAME='aro_vib2', CHANNEL='ai2', OPTIONS={'sensitivity': 100}),
+                SensorConfig(NAME='dispensing_vib', CHANNEL='ai3', OPTIONS={'sensitivity': 100}),
+            ]
+        ),
+        NIDeviceConfig(
+            NAME='vib_device2',
+            TYPE=NIDeviceType.VIB,
+            RATE=30,
+            SENSORS=[
+                SensorConfig(NAME='v1', CHANNEL='ai0', OPTIONS={'sensitivity': 100}),
+                SensorConfig(NAME='v2', CHANNEL='ai1', OPTIONS={'sensitivity': 100}),
+                SensorConfig(NAME='v3', CHANNEL='ai2', OPTIONS={'sensitivity': 100}),
+                SensorConfig(NAME='v4', CHANNEL='ai3', OPTIONS={'sensitivity': 100}),
             ]
         )
     ]
@@ -27,7 +49,10 @@ def temp_config() -> DAQSystemConfig:
                 PATH='C://Users//DaeHwan//Desktop//data'
             ),
             DATA_SEND_MODE=DataSendModeConfig(
-                ACTIVATION=False
+                ACTIVATION=True,
+                HOST='192.168.0.21',
+                PORT=8082,
+                TIMEOUT=60
             )
         ),
         MachineConfig(
@@ -41,8 +66,8 @@ def temp_config() -> DAQSystemConfig:
             ),
             DATA_SEND_MODE=DataSendModeConfig(
                 ACTIVATION=True,
-                HOST='192.168.0.10',
-                PORT=8000,
+                HOST='192.168.0.21',
+                PORT=8082,
                 TIMEOUT=60
             )
         )

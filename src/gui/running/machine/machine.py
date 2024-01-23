@@ -1,3 +1,4 @@
+import os
 from typing import List, Dict, Tuple
 from scipy import signal
 
@@ -7,9 +8,9 @@ from PySide6.QtGui import QFont, QPalette, QColor, QDesktopServices
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, QStackedWidget, QTableWidget, QTableWidgetItem, \
     QHeaderView, QAbstractItemView, QPushButton, QGridLayout
 
-from background.machine.event import Event
+from background.machine.machine_event import MachineEvent
 from config import MachineConfig, DataSaveModeConfig, DataSendModeConfig
-from config.paths import BTN_FOLDER_ACTIVATED_IMG, BTN_FOLDER_DEACTIVATED_IMG
+from config.paths import BTN_FOLDER_ENABLE_IMG, BTN_FOLDER_DISABLE_IMG
 from .realtime_chart import QRealtimeChart
 
 
@@ -68,6 +69,7 @@ class QMachine(QWidget):
         dsave_layout.setContentsMargins(0, 0, 0, 0)
         self.dsave_activated_label = QLabel()
         self.open_dir_btn = QPushButton()
+        self.open_dir_btn.clicked.connect(self._open_folder)
         dsave_layout.addWidget(self.dsave_activated_label)
         dsave_layout.addWidget(self.open_dir_btn, alignment=Qt.AlignmentFlag.AlignRight)
         info_grid_layout.addWidget(QLabel('Data Save Mode : '), 2, 0)
@@ -106,7 +108,7 @@ class QMachine(QWidget):
 
         """ Set fault detection result layout """
         fd_layout = QVBoxLayout()
-        fd_layout.setContentsMargins(0, 20, 0, 30)
+        fd_layout.setContentsMargins(0, 20, 0, 17)
 
         fd_title = QLabel('Fault Detect')
         fd_title.setFont(h1_font)
@@ -126,7 +128,7 @@ class QMachine(QWidget):
         fd_value_layout = QHBoxLayout()
         self.fd_score_label = QLabel('0')
         self.fd_threshold_label = QLabel('0')
-        fd_value_layout.addWidget(QLabel('score : '))
+        fd_value_layout.addWidget(QLabel('fault score : '))
         fd_value_layout.addWidget(self.fd_score_label)
         fd_value_layout.addWidget(QLabel('threshold : '))
         fd_value_layout.addWidget(self.fd_threshold_label)
@@ -162,13 +164,12 @@ class QMachine(QWidget):
         if dsave_conf.ACTIVATION:
             self.dsave_activated_label.setText('Enable')
             self.open_dir_btn.setEnabled(True)
-            self.open_dir_btn.clicked.connect(lambda e: QDesktopServices.openUrl(QUrl.fromLocalFile(dsave_conf.PATH)))
             self.open_dir_btn.setStyleSheet(
                 f'''
                 QPushButton {{
                     background-color: transparent; 
                     border: none;
-                    image: url("{BTN_FOLDER_ACTIVATED_IMG}");
+                    image: url("{BTN_FOLDER_ENABLE_IMG}");
                 }}
                 '''
             )
@@ -180,7 +181,7 @@ class QMachine(QWidget):
                 QPushButton {{
                     background-color: transparent; 
                     border: none;
-                    image: url("{BTN_FOLDER_DEACTIVATED_IMG}");
+                    image: url("{BTN_FOLDER_DISABLE_IMG}");
                 }}
                 '''
             )
@@ -228,9 +229,9 @@ class QMachine(QWidget):
     def event_handle(self, zipped_data: Tuple) -> None:
         event, data = zipped_data
 
-        if event is Event.DataUpdate:
+        if event is MachineEvent.DataUpdate:
             self.e_data_update(data)
-        elif event is Event.FaultDetect:
+        elif event is MachineEvent.FaultDetect:
             self.e_fault_detect(data)
 
     def e_data_update(self, named_data: Dict[str, List[float]]) -> None:
@@ -248,3 +249,7 @@ class QMachine(QWidget):
             self.fault_detect_abnormal()
         else:
             self.fault_detect_normal()
+
+    def _open_folder(self):
+        path = os.path.join(self._m_conf.DATA_SAVE_MODE.PATH, self._m_conf.NAME)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(path))

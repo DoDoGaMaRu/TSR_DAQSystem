@@ -3,7 +3,7 @@ from typing import Callable
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton
 
 
-class QStartup(QWidget):
+class QStartupWidget(QWidget):
     def __init__(self, set_step: Callable, run_step: Callable):
         super().__init__()
         self.layout = QHBoxLayout(self)

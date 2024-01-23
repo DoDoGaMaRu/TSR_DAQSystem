@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
 
-class Event(Enum):
+class MachineEvent(Enum):
     DataUpdate      : int = auto()
     FaultDetect     : int = auto()

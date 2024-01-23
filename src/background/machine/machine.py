@@ -7,7 +7,7 @@ from pandas import DataFrame
 from lib.daq import DataHandler
 from lib.lstm_ae import LstmAE, ModelConfig
 from config.paths import MODEL_DIR
-from .event import Event
+from .machine_event import MachineEvent
 from .event_handler import EventHandler
 
 
@@ -70,9 +70,10 @@ class Machine(DataHandler):
     async def data_update(self, device_name: str, named_datas: Dict[str, List[float]]) -> None:
         named_datas = {sensor: data for sensor, data in named_datas.items() if sensor in self._sensors}
 
-        await self._event_notify(Event.DataUpdate, named_datas)
-        if self._fault_detectable:
-            await self._fault_detect(named_datas)
+        if len(named_datas):
+            await self._event_notify(MachineEvent.DataUpdate, named_datas)
+            if self._fault_detectable:
+                await self._fault_detect(named_datas)
 
     async def _fault_detect(self, named_datas: Dict[str, List[float]]) -> None:
         is_batch = True
@@ -89,12 +90,12 @@ class Machine(DataHandler):
                 score += await self._models[name].detect(target)
             self._init_batches()
 
-            await self._event_notify(Event.FaultDetect, {
+            await self._event_notify(MachineEvent.FaultDetect, {
                 'score': score,
                 'threshold': self._fault_threshold
             })
 
-    async def _event_notify(self, event: Event, data: Dict) -> None:
+    async def _event_notify(self, event: MachineEvent, data: Dict) -> None:
         for handler in self._event_handlers:
             try:
                 self._loop.create_task(handler.event_handle(event, data))

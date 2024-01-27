@@ -48,29 +48,30 @@ class QSettingWidget(QWidget):
         self.bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         button_layout = QHBoxLayout()
-        self.prev_button = QPushButton(text='Prev')
+        self.cancel_button = QPushButton(text='Cancel')
+        self.cancel_button.clicked.connect(self.setting_end.emit)
+
         self.next_button = QPushButton(text='Next')
-        self.prev_button.clicked.connect(self.prev)
         self.next_button.clicked.connect(self.next)
 
-        button_layout.addWidget(self.prev_button)
+        button_layout.addWidget(self.cancel_button)
+        button_layout.addStretch()
         button_layout.addWidget(self.next_button)
 
-        self.bottom_layout.addStretch()
         self.bottom_layout.addLayout(button_layout)
 
     def go_step(self, step: int):
         if 0 < step < self.central_frame.count():
             self.cur_step = step
             self.central_frame.setCurrentIndex(step)
-            self.step_label.setText(f'step {self.cur_step} of {self.central_frame.count() - 1}')
-
-    def prev(self):
-        self.go_step(self.cur_step - 1)
+            self.step_label.setText(f'step {self.cur_step} of {self.central_frame.count()-1}')
 
     def next(self):
         if self.central_frame.widget(self.cur_step).valid_check():
             next_step = self.cur_step + 1
+            if next_step == self.central_frame.count()-1:
+                self.next_button.setText('Finish')
+
             if next_step < self.central_frame.count():
                 self.go_step(next_step)
             else:

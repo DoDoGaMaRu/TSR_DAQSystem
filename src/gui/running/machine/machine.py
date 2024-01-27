@@ -70,6 +70,7 @@ class QMachine(QWidget):
         self.dsave_activated_label = QLabel()
         self.open_dir_btn = QPushButton()
         self.open_dir_btn.clicked.connect(self._open_folder)
+        self.open_dir_btn.setFixedWidth(22)
         dsave_layout.addWidget(self.dsave_activated_label)
         dsave_layout.addWidget(self.open_dir_btn, alignment=Qt.AlignmentFlag.AlignRight)
         info_grid_layout.addWidget(QLabel('Data Save Mode : '), 2, 0)
@@ -168,8 +169,11 @@ class QMachine(QWidget):
                 f'''
                 QPushButton {{
                     background-color: transparent; 
-                    border: none;
+                    border: 1px solid transparent;
                     image: url("{BTN_FOLDER_ENABLE_IMG}");
+                }}
+                QPushButton:hover {{
+                    border-color: green;
                 }}
                 '''
             )
@@ -179,8 +183,8 @@ class QMachine(QWidget):
             self.open_dir_btn.setStyleSheet(
                 f'''
                 QPushButton {{
-                    background-color: transparent; 
-                    border: none;
+                    background-color: transparent;
+                    border: 1px solid transparent;
                     image: url("{BTN_FOLDER_DISABLE_IMG}");
                 }}
                 '''

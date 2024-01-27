@@ -15,7 +15,10 @@ class ConfigLoader:
             open(CONFIG_PATH, 'wb').close()
 
         with open(CONFIG_PATH, 'rb') as conf_file:
-            conf = pickle.load(conf_file)
+            try:
+                conf = pickle.load(conf_file)
+            except:
+                conf = None
             if not is_valid_conf(conf):
                 conf = DAQSystemConfig([], [])
 

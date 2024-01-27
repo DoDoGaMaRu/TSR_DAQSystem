@@ -1,6 +1,6 @@
+import yaml
 import asyncio
 
-import yaml
 from typing import Dict, List
 from pandas import DataFrame
 
@@ -76,7 +76,7 @@ class Machine(DataHandler):
                 await self._fault_detect(named_datas)
 
     async def _fault_detect(self, named_datas: Dict[str, List[float]]) -> None:
-        is_batch = True
+        is_batch = len(named_datas) != 0
         for name, data in named_datas.items():
             if len(self._batches[name]) < self._models[name].batch_size:
                 self._batches[name] += data
@@ -87,7 +87,7 @@ class Machine(DataHandler):
             for name in self._sensors:
                 target = DataFrame()
                 target['data'] = self._batches[name][:self._models[name].batch_size]
-                score += await self._models[name].detect(target)
+                score += self._models[name].detect(target)
             self._init_batches()
 
             await self._event_notify(MachineEvent.FaultDetect, {

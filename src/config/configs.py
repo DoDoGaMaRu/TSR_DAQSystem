@@ -45,9 +45,9 @@ class ActivableModeConfig(ABC):
 
 @dataclass
 class DataSendModeConfig(ActivableModeConfig):
-    HOST            : str = None
-    PORT            : int = None
-    TIMEOUT         : int = None
+    HOST            : str = ''
+    PORT            : int = 0
+    TIMEOUT         : int = 60
 
     def valid_check(self) -> None:
         pass
@@ -55,7 +55,7 @@ class DataSendModeConfig(ActivableModeConfig):
 
 @dataclass
 class DataSaveModeConfig(ActivableModeConfig):
-    PATH            : str = None
+    PATH            : str = ''
 
     def valid_check(self) -> None:
         pass

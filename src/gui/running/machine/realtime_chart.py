@@ -1,6 +1,5 @@
 from typing import List
 
-from PySide6 import QtCore
 from PySide6.QtCharts import QChart, QChartView, QValueAxis, QLineSeries
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout
@@ -41,7 +40,6 @@ class QRealtimeChart(QWidget):
         # Set the layout to the QWidget
         self.setLayout(self.main_layout)
 
-    @QtCore.Slot()
     def append_data(self, datas: List[float]):
         for y in datas:
             self._idx += 1

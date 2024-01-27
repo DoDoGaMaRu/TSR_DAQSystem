@@ -53,7 +53,7 @@ class BaseModel(Model):
 
         return decoded
 
-    async def _data_to_input(self, data: list) -> object:
+    def _data_to_input(self, data: list) -> object:
         # LSTM의 입력 데이터로 변환하는 메소드
         # (입력 데이터 수, 시퀀스 길이, 사용할 컬럼 수)의 형태가 되어야 함
         data_list = []

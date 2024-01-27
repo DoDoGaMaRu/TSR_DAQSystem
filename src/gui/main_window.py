@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QMouseEvent, QPalette, QColor, QFont
+from PySide6.QtGui import QMouseEvent, QPalette, QColor, QFont, QIcon
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QLabel, QPushButton
 
-from config.paths import BTN_CLOSE_HOVER_IMG, BTN_CLOSE_NORMAL_IMG
+from config.paths import BTN_CLOSE_HOVER_IMG, BTN_CLOSE_NORMAL_IMG, ICON_IMG
 
 MAX_WIDTH = 720
 MIN_WIDTH = 480
@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
         self.setPalette(self.palette)
 
         """ Window setting """
+        self.setWindowIcon(QIcon(ICON_IMG))
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.title_bar = QTitleBar(self)
         self.layout().setMenuBar(self.title_bar)

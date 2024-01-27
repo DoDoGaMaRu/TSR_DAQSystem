@@ -22,7 +22,7 @@ class TrayIcon(QSystemTrayIcon):
 
         self.setContextMenu(menu)
         self.show()
-        self.setToolTip("icon hover event")
+        self.setToolTip("DAQSystem")
         self.showMessage("DAQSystem", "System Started")
 
     def _exit_event(self):

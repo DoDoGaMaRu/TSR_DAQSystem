@@ -667,6 +667,9 @@ class QSelectModel(QDialog):
         self.deleteLater()
 
     def cancel(self):
-        shutil.rmtree(f'{MODEL_DIR}\\{self.machine_name}')
+        try:
+            shutil.rmtree(f'{MODEL_DIR}\\{self.machine_name}')
+        except:
+            pass
         self.close()
         self.deleteLater()

@@ -26,7 +26,7 @@ class QRealtimeChart(QWidget):
         # Setting Y-axis
         self.axis_y = QValueAxis()
         self.axis_y.setTickCount(10)
-        self.axis_y.setLabelFormat("%.2f")
+        self.axis_y.setLabelFormat("%.4f")
         self.chart.addAxis(self.axis_y, Qt.AlignLeft)
         self.series.attachAxis(self.axis_y)
 

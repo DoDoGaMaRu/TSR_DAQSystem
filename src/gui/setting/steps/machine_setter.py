@@ -448,7 +448,7 @@ class QMachineEditor(QWidget):
             self.save_checkbox.setChecked(self._m_conf.DATA_SAVE_MODE.ACTIVATION)
             self.save_path_input.setText(self._m_conf.DATA_SAVE_MODE.PATH)
 
-            self.send_checkbox.setChecked(self._m_conf.DATA_SAVE_MODE.ACTIVATION)
+            self.send_checkbox.setChecked(self._m_conf.DATA_SEND_MODE.ACTIVATION)
             self.send_host_input.setText(self._m_conf.DATA_SEND_MODE.HOST)
             self.send_port_input.setText(str(self._m_conf.DATA_SEND_MODE.PORT))
             self._init_sensor_table()

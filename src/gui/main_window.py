@@ -3,6 +3,7 @@ from PySide6.QtGui import QMouseEvent, QPalette, QColor, QFont, QIcon
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QLabel, QPushButton
 
 from config.paths import BTN_CLOSE_HOVER_IMG, BTN_CLOSE_NORMAL_IMG, ICON_IMG
+from config.properties import APPLICATION_NAME
 
 MAX_WIDTH = 720
 MIN_WIDTH = 480
@@ -59,7 +60,7 @@ class QTitleBar(QWidget):
 
         title_font = QFont()
         title_font.setBold(True)
-        title_label = QLabel("DAQSystem")
+        title_label = QLabel(APPLICATION_NAME)
         title_label.setFont(title_font)
 
         self.title_layout.addWidget(title_label)

@@ -1,0 +1,1 @@
+APPLICATION_NAME = 'DAQSystem_v0.2.2'

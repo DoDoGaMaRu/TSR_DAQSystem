@@ -4,6 +4,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QVBoxLayout, QLabel
 from PySide6.QtGui import QFont
 
+from config.properties import APPLICATION_NAME
+
 
 class QStartupWidget(QWidget):
     def __init__(self, set_step: Callable, run_step: Callable):
@@ -16,7 +18,7 @@ class QStartupWidget(QWidget):
         title_font = QFont()
         title_font.setBold(True)
         title_font.setPointSize(32)
-        self.title = QLabel('DAQSystem 0.2.0')
+        self.title = QLabel(APPLICATION_NAME)
         self.title.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.title.setFont(title_font)
         self.set_btn = QPushButton('setting')

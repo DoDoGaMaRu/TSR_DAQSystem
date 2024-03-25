@@ -4,6 +4,8 @@ from typing import Callable
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu, QMainWindow
 
+from config.properties import APPLICATION_NAME
+
 
 class TrayIcon(QSystemTrayIcon):
     def __init__(self, main_window: QMainWindow, icon: QIcon = None):
@@ -22,8 +24,8 @@ class TrayIcon(QSystemTrayIcon):
 
         self.setContextMenu(menu)
         self.show()
-        self.setToolTip("DAQSystem")
-        self.showMessage("DAQSystem", "System Started")
+        self.setToolTip(APPLICATION_NAME)
+        self.showMessage(APPLICATION_NAME, "System Started")
 
     def _exit_event(self):
         self.exit_handler()

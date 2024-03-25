@@ -1,6 +1,7 @@
 import io
 import pickle
 import asyncio
+import socket
 from asyncio import Protocol, Event, transports
 
 SEP         : bytes = b'\o'
@@ -18,6 +19,11 @@ class MachineClient(Protocol):
 
     def connection_made(self, transport: transports.WriteTransport) -> None:
         self._transport = transport
+        sock = self._transport.get_extra_info('socket')
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 60)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
         self._reader = asyncio.StreamReader(loop=asyncio.get_event_loop())
         self._writer = asyncio.StreamWriter(transport=transport,
                                             protocol=self,
